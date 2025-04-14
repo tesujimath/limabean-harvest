@@ -1,0 +1,6 @@
+/.direnv/
+target/
+/steel/
+/*log
+**/tests/**/*.actual.beancount
+/result
