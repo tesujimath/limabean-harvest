@@ -29,7 +29,21 @@
   "Format a single position into a cell"
   [pos]
   ;; TODO cost
-  (row [(decimal->cell (:units pos)) (align-left (:cur pos))] SPACE-MINOR))
+  (let [units (row [(decimal->cell (:units pos)) (align-left (:cur pos))]
+                   SPACE-MINOR)]
+    (if-let [cost (:cost pos)]
+      (row [units (cost->cell cost)] SPACE-MEDIUM)
+      (row [units] SPACE-MEDIUM))))
+
+(defn cost->cell
+  "Format a cost into a cell"
+  [cost]
+  (row [(date->cell (:date cost)) (align-left (:cur cost))
+        (decimal->cell (:per-unit cost))
+        (if-let [label (:label cost)]
+          (align-left label)
+          EMPTY) (if (:merge cost) (align-left "*") EMPTY)]
+       SPACE-MINOR))
 
 (defn stack "A stack of cells" [cells] {:stack cells})
 
@@ -37,6 +51,8 @@
   "Convert a row to cells with gutter"
   [cells gutter]
   {:row [cells gutter]})
+
+(defn date->cell "Convert a date to cell" [d] (align-left (str d)))
 
 (defn decimal->cell
   "Convert decimal to cell anchored at the units digit, so will align with e.g. integers"
