@@ -236,13 +236,6 @@ where
     C: Clone,
     L: Clone,
 {
-    pub(crate) fn units(&self) -> N
-    where
-        N: Sum,
-    {
-        self.adjustments.iter().map(|c| c.units).sum()
-    }
-
     pub fn iter(&self) -> impl Iterator<Item = (&C, &PostingCost<D, N, L>)> {
         repeat(&self.cost_currency).zip(self.adjustments.iter())
     }

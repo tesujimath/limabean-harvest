@@ -34,7 +34,7 @@ impl<'a> Display for Directive<'a> {
             (PDV::Transaction(parsed), LDV::Transaction(loaded)) => {
                 loaded.fmt(f, date, parsed /*, &self.metadata*/)
             }
-            (PDV::Pad(parsed), LDV::Pad(loaded)) => {
+            (PDV::Pad(_parsed), LDV::Pad(loaded)) => {
                 // TODO write pad postings as a transaction
                 loaded.fmt(f, date, directive /*, &self.metadata*/)
             }

@@ -69,15 +69,11 @@ where
 
 pub(crate) const EMPTY: &str = "";
 pub(crate) const SPACE: &str = " ";
-pub(crate) const COMMA: &str = ",";
-pub(crate) const TILDE_SPACE: &str = " ~ ";
 pub(crate) const NEWLINE: &str = "\n";
 pub(crate) const NEWLINE_INDENT: &str = "\n  ";
 
-pub(crate) const FLUSH: &str = "";
 pub(crate) const GUTTER_MINOR: &str = " ";
 pub(crate) const GUTTER_MEDIUM: &str = "  ";
-pub(crate) const GUTTER_MAJOR: &str = "   ";
 
 pub(crate) mod beancount;
 pub(crate) mod edn;
