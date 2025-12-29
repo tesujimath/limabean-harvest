@@ -2,9 +2,9 @@ use color_eyre::eyre::Result;
 use slugify::slugify;
 use std::{collections::HashMap, path::Path};
 
-use super::Import;
+use super::Ingest;
 
-pub(crate) fn import(path: &Path) -> Result<Import> {
+pub(crate) fn ingest(path: &Path) -> Result<Ingest> {
     let csv_file = std::fs::File::open(path)?;
     let mut rdr = csv::Reader::from_reader(csv_file);
     let fields = rdr
@@ -23,16 +23,9 @@ pub(crate) fn import(path: &Path) -> Result<Import> {
         transactions.push(transaction);
     }
 
-    let header = [
-        ("format", "csv".to_string()),
-        ("path", path.to_string_lossy().into_owned()),
-    ]
-    .into_iter()
-    .collect::<HashMap<_, _>>();
-
-    Ok(Import {
-        header,
-        fields,
-        transactions,
+    Ok(Ingest {
+        header: HashMap::default(),
+        txn_fields: fields,
+        txns: transactions,
     })
 }

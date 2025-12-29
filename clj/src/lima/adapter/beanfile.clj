@@ -7,7 +7,7 @@
 (def readers {'time/date #(jt/local-date %)})
 
 (defn read-edn-string
-  "Read string as LIma PP EDN"
+  "Read string as Lima PP EDN"
   [s]
   (edn/read-string {:readers readers} s))
 
@@ -18,6 +18,15 @@
     (if (= (booked :exit) 0)
       (read-edn-string (booked :out))
       (do (println "lima-pod error" (booked :err))
+          (throw (Exception. "lima-pod failed"))))))
+
+(defn digest
+  "Read EDN from lima-pod digest and return or throw"
+  [beancount-path]
+  (let [digested (shell/sh "lima-pod" "digest" beancount-path)]
+    (if (= (digested :exit) 0)
+      (read-edn-string (digested :out))
+      (do (println "lima-pod error" (digested :err))
           (throw (Exception. "lima-pod failed"))))))
 
 (defn inventory

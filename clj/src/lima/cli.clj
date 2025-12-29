@@ -2,7 +2,8 @@
   (:require [cli-matic.core :as cli-matic]
             [lima.adapter.beanfile :as beanfile]
             [lima.adapter.tabulate :as tabulate]
-            [lima.core.inventory :as inv]))
+            [lima.core.inventory :as inv]
+            [lima.adapter.import :as import]))
 
 (defn report
   "Run the named report"
@@ -12,6 +13,14 @@
                   inv (inv/build directives options)
                   tab (tabulate/inventory inv)]
               (println tab))))
+
+(defn import-files
+  "Import files"
+  [{:keys [context _arguments]}]
+  (let [imports _arguments
+        digest (beanfile/digest context)
+        ingested (import/)]
+    (println "import" imports "with digest" digest)))
 
 (def CONFIGURATION
   {:command "lima",
@@ -30,4 +39,15 @@
                           :type :string,
                           :env "LIMA_BEANPATH",
                           :default :present}],
-                  :runs report}]})
+                  :runs report}
+                 {:command "import",
+                  :description "Import various format files into Beancount",
+                  :opts [{:as "Beancount file path for import context",
+                          :option "context",
+                          :type :string,
+                          :env "LIMA_BEANPATH"}
+                         {:as "Import configuration",
+                          :option "config",
+                          :type :string,
+                          :env "LIMA_IMPORT_CONFIG"}],
+                  :runs import-files}]})

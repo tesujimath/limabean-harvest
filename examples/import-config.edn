@@ -1,0 +1,1 @@
+{:ingesters [{:ingester ["lima-pod" "ingest" :file], :pathglob "*.ofx"}]}

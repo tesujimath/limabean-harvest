@@ -1,7 +1,7 @@
 use crate::{
     digest::Digest,
-    format::edn::{write_digest_as_edn, write_import_as_edn},
-    import::Import,
+    format::edn::write_digest_as_edn,
+    ingest::{write_ingest_as_json, Ingest},
 };
 use color_eyre::eyre::Result;
 use std::{
@@ -29,24 +29,24 @@ struct Cli {
 enum Command {
     /// Calculate all the bookings
     Book {
-        /// Beancount ledger
-        ledger: PathBuf,
+        /// Beancount file path
+        beanpath: PathBuf,
 
         /// Output format, defaults to beancount
         #[clap(short)]
         format: Option<Format>,
     },
 
-    /// Digest the Beancount ledger for import
+    /// Digest the Beancount file for import
     Digest {
-        /// Beancount ledger
-        ledger: PathBuf,
+        /// Beancount file path
+        beanpath: PathBuf,
     },
 
-    /// Import from external CSV or OFX files
-    Import {
-        /// File to import
-        import_file: PathBuf,
+    /// Ingest from external CSV or OFX files into EDN
+    Ingest {
+        /// File to ingest
+        ingest_file: PathBuf,
     },
 
     /// Tabulate JSON according to tabulator
@@ -84,14 +84,17 @@ fn main() -> Result<()> {
     let cli = Cli::parse();
 
     match &cli.command {
-        Command::Book { ledger, format } => book::write_bookings_from(
+        Command::Book {
+            beanpath: ledger,
+            format,
+        } => book::write_bookings_from(
             ledger,
             format.unwrap_or(Format::default()).into(),
             out_w,
             error_w,
         ),
 
-        Command::Digest { ledger } => {
+        Command::Digest { beanpath: ledger } => {
             let digest = Digest::load_from(
                 ledger,
                 vec![TXNID_KEY.to_string(), TXNID2_KEY.to_string()],
@@ -102,9 +105,9 @@ fn main() -> Result<()> {
             write_digest_as_edn(&digest, out_w)
         }
 
-        Command::Import { import_file } => {
-            let import = Import::parse_from(import_file, error_w)?;
-            write_import_as_edn(&import, out_w)
+        Command::Ingest { ingest_file } => {
+            let ingest = Ingest::parse_from(ingest_file, error_w)?;
+            write_ingest_as_json(&ingest, out_w)
         }
 
         Command::Tabulate => {
@@ -138,6 +141,6 @@ const NARRATION2_KEY: &str = "narration2";
 pub(crate) mod book;
 pub(crate) mod digest;
 pub(crate) mod format;
-pub(crate) mod import;
+pub(crate) mod ingest;
 pub(crate) mod options;
 pub(crate) mod plugins;

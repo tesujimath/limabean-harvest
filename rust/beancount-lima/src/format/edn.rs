@@ -4,7 +4,6 @@ use time::Date;
 use crate::{
     book::{pad_flag, types::*},
     digest::Digest,
-    import::Import,
 };
 use beancount_parser_lima as parser;
 use color_eyre::eyre::Result;
@@ -52,18 +51,6 @@ where
 
     let mut buffered_out_w = BufWriter::new(out_w);
     writeln!(buffered_out_w, "{}\n", Edn(digest))?;
-
-    Ok(())
-}
-
-pub(crate) fn write_import_as_edn<W>(import: &Import, out_w: W) -> Result<()>
-where
-    W: std::io::Write + Copy,
-{
-    use std::io::{BufWriter, Write};
-
-    let mut buffered_out_w = BufWriter::new(out_w);
-    writeln!(buffered_out_w, "{}\n", Edn(import))?;
 
     Ok(())
 }
@@ -602,37 +589,6 @@ impl<'a> FmtEdn for &parser::Options<'a> {
             )
                 .fmt_edn(f)?;
         }
-        map_end(f)
-    }
-}
-
-impl FmtEdn for &Import {
-    fn fmt_edn(self, f: &mut Formatter<'_>) -> fmt::Result {
-        use Separator::*;
-
-        map_begin(f)?;
-        (
-            Keyword::Header,
-            EdnMap(self.header.iter().map(|(k, v)| (*k, v.as_str()))),
-            Flush,
-        )
-            .fmt_edn(f)?;
-        (
-            Keyword::Fields,
-            EdnVector(self.fields.iter().map(|v| v.as_str())),
-            Spaced,
-        )
-            .fmt_edn(f)?;
-        (
-            Keyword::Transactions,
-            EdnVector(
-                self.transactions
-                    .iter()
-                    .map(|vs| EdnVector(vs.iter().map(|v| v.as_str()))),
-            ),
-            Spaced,
-        )
-            .fmt_edn(f)?;
         map_end(f)
     }
 }
