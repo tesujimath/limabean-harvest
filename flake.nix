@@ -80,6 +80,7 @@
 
               clojure-lsp
               neil
+              jre
 
               # useful tools:
               beancount
