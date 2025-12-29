@@ -1,12 +1,6 @@
 (ns lima.main
+  (:require [cli-matic.core :refer [run-cmd]])
+  (:require [lima.cli :refer [CONFIGURATION]])
   (:gen-class))
 
-(defn greet
-  "Callable entry point to the application."
-  [data]
-  (println (str "Hello, " (or (:name data) "World") "!")))
-
-(defn -main
-  "I don't do a whole lot ... yet."
-  [& args]
-  (greet {:name (first args)}))
+(defn -main [& args] (run-cmd args CONFIGURATION))
