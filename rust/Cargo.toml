@@ -1,19 +1,39 @@
-[workspace]
-resolver = "3"
-members = ["beancount-lima", "beancount-lima-booking"]
+[package]
+name = "beancount-lima"
+version = "0.6.0"                                           # keep in step with below
+edition = "2024"
+license = "MIT OR Apache-2.0"
+description = "Beancount frontend using Lima parser"
+homepage = "https://github.com/tesujimath/beancount-lima"
+repository = "https://github.com/tesujimath/beancount-lima"
+readme = "../README.md"
 
-[workspace.package]
-version = "0.6.0" # keep in step with below
+[[bin]]
+name = "lima-pod"
+path = "src/main.rs"
 
-[workspace.dependencies]
-beancount-lima-booking = { path = "./beancount-lima-booking", version = "0.6.0" } # keep in step with above
+[dependencies]
 beancount-parser-lima = "0.14.1"
-# beancount-parser-lima = { version = "0.14.1", path = "../beancount-parser-lima" }
+clap = { version = "4.5.42", features = ["derive"] }
+color-eyre = "0.6.5"
+csv = "1.3.1"
 hashbrown = "0.15.4"
+joinery = "3.1.0"
+regex = "1.11.1"
 rstest = "0.26.1"
 rust_decimal = "1.37.2"
-rust_decimal_macros = "1.37.2"
+serde = { version = "1.0.228", features = ["derive"] }
+serde_json = { version = "1.0.145" }
+sgmlish = "0.2.0"
+slugify = "0.1.0"
+strum = "0.27.2"
 strum_macros = "0.27.2"
-time = "0.3.41"
+time = { version = "0.3.41", features = ["local-offset", "parsing"] }
 tracing = "0.1.41"
 tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
+
+[dev-dependencies]
+#time = { version = "0.3.41", features = ["macros"] }
+
+[build-dependencies]
+build-deps = "0.1.4"

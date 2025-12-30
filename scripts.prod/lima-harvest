@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+test -r "$LIMA_HARVEST_JAR" || {
+    echo >&2 "lima-harvet JAR not found, please define environment variable LIMA_HARVEST_JAR"
+    exit 1
+}
+
+exec java -jar "$LIMA_HARVEST_JAR" "$@"

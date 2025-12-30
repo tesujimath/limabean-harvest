@@ -1,10 +1,10 @@
-# lima/lima
+# lima.harvest
 
-FIXME: my new application.
+This is a new importer and framework for [Beancount](https://github.com/beancount/beancount) using [Rust](https://rust-lang.org) and [Clojure](https://clojure.org/) and the [Lima parser](https://github.com/tesujimath/beancount-parser-lima).
 
 ## Installation
 
-Download from https://github.com/lima/lima
+Download from https://github.com/tesujimath/beancount-lima-harvest
 
 ## Usage
 
