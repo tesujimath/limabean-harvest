@@ -1,6 +1,8 @@
 2016-03-01 open Assets:Bank:Uk:Current
+  accid: "10-9999-0000001-01"
 
 2016-03-01 open Assets:Bank:Uk:Savings
+  accid: "10-9999-0000001-02"
 
 2016-03-01 open Expenses:Groceries
 
@@ -23,4 +25,3 @@
 2025-01-01 txn "TRANSFER TO SAVINGS" ""
   Assets:Bank:Uk:Current  10.00 GBP
   Assets:Bank:Uk:Savings
-

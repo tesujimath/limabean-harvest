@@ -1,10 +1,14 @@
 2016-03-01 open Assets:Bank:Current
+  accid: "99-1234-0123456-07"
 
 2016-03-01 open Assets:Bank:Savings
+  accid: "99-1234-0123456-21"
 
 2016-03-01 open Assets:Bank:Uk:Current
+  accid: "10-9999-0000001-01"
 
 2016-03-01 open Assets:Bank:Uk:Savings
+  accid: "10-9999-0000001-02"
 
 2016-03-01 open Expenses:Groceries
 
@@ -53,7 +57,7 @@
 2020-01-01 txn "PIE TAX 28.000%" "PIE TAX 28.000% ;"
   txnid: "99-1234-0123456-21.01Jan2020.2"
   Assets:Bank:Savings       -60.39 NZD
-  Expenses:Tax                                 
+  Expenses:Tax
 
 2020-01-01 txn "TRANSFER TO SAVINGS"
   Assets:Bank:Uk:Current   -100.00 NZD
@@ -61,5 +65,4 @@
 
 2020-02-01 txn "TRANSFER FROM CURRENT"
   Assets:Bank:Uk:Savings    100.00 NZD
-  Assets:Bank:Uk:Current    
-
+  Assets:Bank:Uk:Current

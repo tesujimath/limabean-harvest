@@ -1,0 +1,3 @@
+{:classifiers [{:ingester ["lima-pod" "ingest" :file], :path-glob "*.ofx"}],
+ :mappers [{{"dialect" "ofx1"} {"a" "b"}}
+           {{"dialect" "firstdirect", {"" nil}}}]}
