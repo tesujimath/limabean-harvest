@@ -1,33 +1,35 @@
 (ns lima.harvest.cli
   (:require [cli-matic.core :as cli-matic]
             [lima.harvest.adapter.beanfile :as beanfile]
-            [lima.harvest.adapter.import :as import]))
+            [lima.harvest.adapter.config :as config]
+            [lima.harvest.core.config :refer [DEFAULT-CONFIG]]
+            [lima.harvest.adapter.harvest :as adapter]
+            [failjure.core :as f]))
 
-(defn import-files
-  "Import files"
-  [{config-path :config beanpath :context import-paths  :_arguments}]
-  (let [config (if config-path (import/read-config config-path) import/DEFAULT-CONFIG)
-        digest (and context (beanfile/digest context))
-        import-paths _arguments
-        classified (mapv (fn [import-path] (import/classify config import-path)) import-paths)
-        ingested (import/)]
-    (println "import" imports "with digest" digest)
-    (import)
-    ))
+(defn harvest
+  "Harvest files for import"
+  [{config-path :config, beanpath :context, import-paths :_arguments}]
+  (f/attempt-all [config (if config-path
+                           (config/read-from-file config-path)
+                           DEFAULT-CONFIG)
+                  digest (if beanpath
+                           (beanfile/digest beanpath)
+                           beanfile/EMPTY-DIGEST)
+                  harvested (adapter/harvest-txns config digest import-paths)]
+    ;; TODO formatting
+    (println harvested)
+    (f/when-failed [e] (do (println (f/message e) *err*) (System/exit 1)))))
 
 (def CONFIGURATION
   {:command "lima-harvest",
-   :description "Import framework for Beancount using Lima",
    :version "0.0.1",
-   :subcommands [{:command "import",
-                  :description "Import various format files into Beancount",
-                  :opts [{:as "Beancount file path for import context",
-                          :option "context",
-                          :type :string,
-                          :env "LIMA_BEANPATH"}
-                         {:as "Import config path",
-                          :option "config",
-                          :type :string,
-                          :env "LIMA_IMPORT_CONFIG"
-                          }],
-                  :runs import-files}]})
+   :description "Import various format files into Beancount",
+   :opts [{:as "Beancount file path for import context",
+           :option "context",
+           :type :string,
+           :env "LIMA_BEANPATH"}
+          {:as "Import config path",
+           :option "config",
+           :type :string,
+           :env "LIMA_HARVEST_CONFIG"}],
+   :runs harvest})
