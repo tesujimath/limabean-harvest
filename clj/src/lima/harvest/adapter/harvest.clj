@@ -68,7 +68,7 @@
                   (:path config))))
     (f/fail "no realizers specified in %s" (:path config))))
 
-(defn prepare-one
+(defn prepare
   "Classify and ingest a single import file, and resolve its realizer"
   [config digest import-path]
   (f/attempt-all [classified (classify config digest import-path)
@@ -77,6 +77,18 @@
     (merge ingested
            {:meta (merge (:meta ingested) {:realizer (:name realizer)}),
             :realizer realizer})))
+
+(defn prepare-xf
+  "Transducer to prepare import files, with fast fail."
+  [config digest]
+  (fn [rf]
+    (fn
+      ([] (rf))
+      ([result] (rf result))
+      ([result x]
+       (let [prepared (prepare config digest x)]
+         ;; fast fail
+         (if (f/failed? prepared) (reduced prepared) (rf result prepared)))))))
 
 (defn dedupe-xf
   "Transducer to dedupe with respect to txnids"
@@ -88,7 +100,7 @@
   [payees narrations]
   (map (infer/secondary-accounts payees narrations)))
 
-(defn harvest-one-txns
+(defn harvest-txns-from-prepared-ef
   "Eduction to harvest from prepared"
   [config digest prepared]
   (let [{:keys [hdr txns realizer]} prepared]
@@ -98,11 +110,27 @@
                                                  (:narrations digest)))
               txns)))
 
+;; TODO extract this to somewhere more general
+(defn mapcat-fast-fail
+  [f]
+  (fn [rf]
+    (fn
+      ([] (rf))
+      ([result] (if (f/failed? result) result (rf result)))
+      ([result x]
+       (reduce (fn [result y] (if (f/failed? y) (reduced y) (rf result y)))
+         result
+         (f x))))))
+
+(defn harvest-txns-from-prepared-xf
+  "Transducer to harvest from prepared"
+  [config digest]
+  (mapcat-fast-fail #(harvest-txns-from-prepared-ef config digest %)))
+
 (defn harvest-txns
   "Harvest transaction from import paths"
   [config digest import-paths]
-  (f/attempt-all [prepareds (mapv #(prepare-one config digest %) import-paths)
-                  failures (filterv f/failed? prepareds)]
-    (if (seq failures)
-      (f/fail (str/join "\n" (map f/message failures)))
-      (into [] cat (map #(harvest-one-txns config digest %) prepareds)))))
+  (into []
+        (comp (prepare-xf config digest)
+              (harvest-txns-from-prepared-xf config digest))
+        import-paths))
