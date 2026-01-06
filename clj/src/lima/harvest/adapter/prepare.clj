@@ -1,12 +1,8 @@
-(ns lima.harvest.adapter.harvest
+(ns lima.harvest.adapter.prepare
   (:require [cheshire.core :as cheshire]
-            [clojure.edn :as edn]
             [clojure.java.shell :as shell]
             [lima.harvest.core.glob :as glob]
             [clojure.string :as str]
-            [java-time.api :as jt]
-            [lima.harvest.core.infer :as infer]
-            [lima.harvest.core.realize :as realize]
             [failjure.core :as f]))
 
 (defn select-by-path
@@ -20,20 +16,22 @@
     nil))
 
 (defn classify
-  "Classify an import.
-
-  And augment the header according to hdr-fn, if any."
-  [config digest import-path]
+  "Classify an import."
+  [config import-path]
   (if-let [classifiers (:classifiers config)]
-    (f/attempt-all [classified
-                      (or (some #(select-by-path % import-path) classifiers)
-                          (f/fail
-                            "failed to classify %s matching path-globs in %s"
-                            import-path
-                            (:path config)))
-                    hdr-fn (:hdr-fn classified)]
-      (if hdr-fn (hdr-fn digest classified) classified))
+    (or (some #(select-by-path % import-path) classifiers)
+        (f/fail "failed to classify %s matching path-globs in %s"
+                import-path
+                (:path config)))
     (f/fail "no classifiers specified in %s" (:path config))))
+
+(defn augment
+  "Augment the header of a classified import according to hdr-fn, if any."
+  [digest classified]
+  (let [hdr-fn (:hdr-fn classified)]
+    (if hdr-fn
+      (update classified :hdr hdr-fn digest (select-keys classified [:path]))
+      classified)))
 
 (defn substitute
   "Substitute k for v among items"
@@ -69,16 +67,17 @@
     (f/fail "no realizers specified in %s" (:path config))))
 
 (defn prepare
-  "Classify and ingest a single import file, and resolve its realizer"
+  "Classify, augment, and ingest a single import file, and resolve its realizer"
   [config digest import-path]
-  (f/attempt-all [classified (classify config digest import-path)
-                  ingested (ingest classified)
+  (f/attempt-all [classified (classify config import-path)
+                  augmented (augment digest classified)
+                  ingested (ingest augmented)
                   realizer (get-realizer config ingested)]
     (merge ingested
            {:meta (merge (:meta ingested) {:realizer (:name realizer)}),
             :realizer realizer})))
 
-(defn prepare-xf
+(defn xf
   "Transducer to prepare import files, with fast fail."
   [config digest]
   (fn [rf]
@@ -89,48 +88,3 @@
        (let [prepared (prepare config digest x)]
          ;; fast fail
          (if (f/failed? prepared) (reduced prepared) (rf result prepared)))))))
-
-(defn dedupe-xf
-  "Transducer to dedupe with respect to txnids"
-  [txnids]
-  (filter #(not (if-let [txnid (:txnid %)] (contains? txnids txnid)))))
-
-(defn infer-secondary-accounts-xf
-  "Transducer to infer secondary accounrs from payees and narrations"
-  [payees narrations]
-  (map (infer/secondary-accounts payees narrations)))
-
-(defn harvest-txns-from-prepared-ef
-  "Eduction to harvest from prepared"
-  [config digest prepared]
-  (let [{:keys [hdr txns realizer]} prepared]
-    (eduction (comp (realize/xf digest realizer hdr)
-                    (dedupe-xf (:txnids digest))
-                    (infer-secondary-accounts-xf (:payees digest)
-                                                 (:narrations digest)))
-              txns)))
-
-;; TODO extract this to somewhere more general
-(defn mapcat-fast-fail
-  [f]
-  (fn [rf]
-    (fn
-      ([] (rf))
-      ([result] (if (f/failed? result) result (rf result)))
-      ([result x]
-       (reduce (fn [result y] (if (f/failed? y) (reduced y) (rf result y)))
-         result
-         (f x))))))
-
-(defn harvest-txns-from-prepared-xf
-  "Transducer to harvest from prepared"
-  [config digest]
-  (mapcat-fast-fail #(harvest-txns-from-prepared-ef config digest %)))
-
-(defn harvest-txns
-  "Harvest transaction from import paths"
-  [config digest import-paths]
-  (into []
-        (comp (prepare-xf config digest)
-              (harvest-txns-from-prepared-xf config digest))
-        import-paths))

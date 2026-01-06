@@ -21,25 +21,15 @@
         :else (throw (Exception. (str "bad realizer val " r)))))
 
 (defn realize-txn
-  "Realize the transaction, and if f is defined, apply that after the event."
-  [realizer f hdr txn]
-  (let [m (into {}
-                (map (fn [[k v]] [k (realize-field hdr txn (get realizer k))])
-                  realizer))]
-    (if f (f m) m)))
-
-(defn lookup-accid
-  "Lookup the accid if any in the digest for the account"
-  [digest txn]
-  (if-let [accid (:accid txn)]
-    (if-let [acc (get (digest :accids) accid)]
-      (assoc txn :acc acc)
-      txn)
-    txn))
+  "Realize the transaction, and if txn-fn is defined, apply that after the event."
+  [realizer txn-fn hdr txn]
+  (let [realized (into {}
+                       (map (fn [[k v]]
+                              [k (realize-field hdr txn (get realizer k))])
+                         realizer))]
+    (if txn-fn (txn-fn realized) realized)))
 
 (defn xf
   "Transducer to realize transactions"
-  [digest realizer hdr]
-  (map #(->> %
-             (realize-txn (:txn realizer) (:txn-fn realizer) hdr)
-             (lookup-accid digest))))
+  [realizer hdr]
+  (map (fn [txn] (realize-txn (:txn realizer) (:txn-fn realizer) hdr txn))))

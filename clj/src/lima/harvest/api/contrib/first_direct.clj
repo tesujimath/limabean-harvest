@@ -1,5 +1,8 @@
-(ns lima.harvest.contrib.first-direct
+(ns lima.harvest.api.contrib.first-direct
   (:require [clojure.string :as str]))
+
+;; functions in the api namespace are referenced from config files, so stability
+;; is important
 
 (defn payee-narration
   "Extract payee and narration from txn description and remove that.

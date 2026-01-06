@@ -2,7 +2,7 @@
                 :name "Generic OFX",
                 :selector {:path-glob "**.ofx"}}
                {:hdr {:cur "GBP", :dialect "first-direct.csv"},
-                :hdr-fn lima.harvest.core.account/infer-from-path,
+                :hdr-fn lima.harvest.api/infer-accid-from-path,
                 :ingester ["hull-csv" :path],
                 :name "first direct CSV",
                 :selector {:path-glob "**/first-direct/**.csv"}}],
@@ -31,4 +31,4 @@
            :date {:fmt "dd/MM/yyyy", :key :date, :src :txn, :type :date},
            :description {:key :description, :src :hdr},
            :units {:key :amount, :src :txn, :type :decimal}},
-     :txn-fn lima.harvest.contrib.first-direct/payee-narration}]}
+     :txn-fn lima.harvest.api.contrib.first-direct/payee-narration}]}
