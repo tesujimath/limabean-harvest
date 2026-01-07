@@ -18,7 +18,7 @@
            :date {:fmt "yyyyMMdd", :key :dtposted, :src :txn, :type :date},
            :narration {:key :memo, :src :txn},
            :payee {:key :name, :src :txn},
-           :txnid [{:key :acctid, :src :hdr} "." {:key :fitid, :src :hdr}],
+           :txnid [{:key :acctid, :src :hdr} "." {:key :fitid, :src :txn}],
            :units {:key :trnamt, :src :txn, :type :decimal}}}
     {:bal {:accid {:key :accid, :src :hdr},
            :cur {:key :cur, :src :hdr},
