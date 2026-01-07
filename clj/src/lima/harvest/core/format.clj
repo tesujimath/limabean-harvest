@@ -1,6 +1,16 @@
 (ns lima.harvest.core.format
   (:require [clojure.string :as str]))
 
+;; TODO get these from config:
+(def INDENT "  ")
+(def UNIT-COLUMN 76)
+(def COMMENT-COLUMN 41)
+
+;; but not these:
+(def TXNID_KEY "txnid")
+(def TXNID2_KEY "txnid2")
+(def PAYEE2_KEY "payee2")
+
 (defn escape-string [s] (str/escape s {\" "\\\"", \\ "\\\\"}))
 
 (defn payee-narration
@@ -51,7 +61,7 @@
 (defn transaction
   "format a transaction"
   [txn]
-  (format "%tF txn%s\n%s%s%s%s%s\n"
+  (format "%tF txn%s\n%s%s%s%s%s"
           (:date txn)
           (payee-narration " " txn)
           (if-let [txnid (:txnid txn)]
@@ -65,13 +75,3 @@
             "")
           (post-acc (:acc txn) (:units txn) (:cur txn))
           (str/join (map post-acc2 (:acc2 txn)))))
-
-;; TODO get these from config:
-(def INDENT "  ")
-(def UNIT-COLUMN 76)
-(def COMMENT-COLUMN 41)
-
-;; but not these:
-(def TXNID_KEY "txnid")
-(def TXNID2_KEY "txnid2")
-(def PAYEE2_KEY "payee2")

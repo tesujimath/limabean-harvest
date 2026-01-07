@@ -5,7 +5,8 @@
             [lima.harvest.adapter.prepare :as prepare]
             [lima.harvest.core.config :refer [DEFAULT-CONFIG]]
             [lima.harvest.core.harvest :as harvest]
-            [failjure.core :as f]))
+            [failjure.core :as f]
+            [lima.harvest.core.format :as format]))
 
 
 (defn harvest-txns
@@ -27,6 +28,5 @@
                            (beanfile/digest maybe-beanpath)
                            beanfile/EMPTY-DIGEST)
                   harvested (harvest-txns config digest import-paths)]
-    ;; TODO formatting
-    (println harvested)
+    (run! (fn [txn] (println (format/transaction txn))) harvested)
     (f/when-failed [e] (do (println (f/message e) *err*) (System/exit 1)))))
