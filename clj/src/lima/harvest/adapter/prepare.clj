@@ -1,9 +1,10 @@
 (ns lima.harvest.adapter.prepare
   (:require [cheshire.core :as cheshire]
             [clojure.java.shell :as shell]
-            [lima.harvest.core.glob :as glob]
             [clojure.string :as str]
-            [failjure.core :as f]))
+            [clojure.tools.logging :as log]
+            [failjure.core :as f]
+            [lima.harvest.core.glob :as glob]))
 
 (defn select-by-path
   "Return the classifier if selected, augmented with path and meta data"
@@ -70,9 +71,15 @@
   "Classify, augment, and ingest a single import file, and resolve its realizer"
   [config digest import-path]
   (f/attempt-all [classified (classify config import-path)
+                  _ (log/info "classified" import-path "as" (:name classified))
                   augmented (augment digest classified)
                   ingested (ingest augmented)
-                  realizer (get-realizer config ingested)]
+                  realizer (get-realizer config ingested)
+                  _ (log/info "realizing"
+                              import-path
+                              "using"
+                              (:name realizer)
+                              realizer)]
     (merge ingested
            {:meta (merge (:meta ingested) {:realizer (:name realizer)}),
             :realizer realizer})))

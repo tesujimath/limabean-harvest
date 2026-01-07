@@ -5,6 +5,7 @@
 (def INDENT "  ")
 (def UNIT-COLUMN 76)
 (def COMMENT-COLUMN 41)
+(def UNKNOWN_ACC "Assets:Unknown")
 
 ;; but not these:
 (def TXNID_KEY "txnid")
@@ -32,7 +33,7 @@
 (defn post-acc
   "Format a post for the primary acc, with unit digit of units at UNIT-COLUMN"
   [acc units cur]
-  (let [indent-acc (format "%s%s" INDENT acc)
+  (let [indent-acc (format "%s%s" INDENT (or acc UNKNOWN_ACC))
         width (count indent-acc)
         [u-str u-anchor] (decimal->anchored-string units)
         n-pad (max 1 (- UNIT-COLUMN (+ width u-anchor 1)))

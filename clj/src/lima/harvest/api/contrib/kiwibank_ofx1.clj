@@ -1,5 +1,6 @@
 (ns lima.harvest.api.contrib.kiwibank-ofx1
-  (:require [clojure.string :as str]))
+  (:require [clojure.string :as str]
+            [clojure.tools.logging :as log]))
 
 ;; Alas Kiwibank OFX1 replicates the payee into the narration, in different
 ;; ways:
@@ -16,28 +17,29 @@
   (if (str/starts-with? s prefix) (subs s (count prefix)) s))
 
 
-(defn clean-payee-narration-xf
-  "Return a transducer to cleanup payee and narration in a Kiwibank txn"
-  []
-  (map
-    (fn [txn]
-      (let [payee (:payee txn)
-            narration (:narration txn)
-            [prefix narration-proper] (str/split narration #";" 2)
-            prefix (str/trim prefix)
-            narration-proper (str/trim narration-proper)
-            payee-limit 32]
-        (cond
-          ;; we may have "<payee> ;<narration>"
-          (and narration-proper
-               (or (str/starts-with? prefix payee)
-                   (str/starts-with? (strip-prefix "POS W/D " prefix) payee)))
-            (let [updated-payee (assoc txn :payee prefix)]
-              (if (empty? narration-proper)
-                (dissoc updated-payee :narration)
-                (assoc updated-payee :narration narration-proper)))
-          ;; if the narration is simply the untruncated version of
-          ;; the payee, then replace the payee with it
-          (=truncated? payee narration payee-limit)
-            (assoc (dissoc txn :narration) :payee narration)
-          :else txn)))))
+(defn clean-payee-narration
+  "Cleanup payee and narration in a Kiwibank txn"
+  [txn]
+  (let [payee (:payee txn)
+        narration (:narration txn)
+        [prefix narration-proper] (str/split narration #";" 2)
+        prefix (str/trim prefix)
+        narration-proper (str/trim narration-proper)
+        payee-limit 32
+        cleaned (cond
+                  ;; we may have "<payee> ;<narration>"
+                  (and narration-proper
+                       (or (str/starts-with? prefix payee)
+                           (str/starts-with? (strip-prefix "POS W/D " prefix)
+                                             payee)))
+                    (let [updated-payee (assoc txn :payee prefix)]
+                      (if (empty? narration-proper)
+                        (dissoc updated-payee :narration)
+                        (assoc updated-payee :narration narration-proper)))
+                  ;; if the narration is simply the untruncated version of
+                  ;; the payee, then replace the payee with it
+                  (=truncated? payee narration payee-limit)
+                    (assoc (dissoc txn :narration) :payee narration)
+                  :else txn)]
+    (log/info "kiwibank-ofx1/clean-payee-narration" txn "as" cleaned)
+    cleaned))
