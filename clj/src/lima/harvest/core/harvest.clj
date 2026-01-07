@@ -27,6 +27,6 @@
          (f x))))))
 
 (defn txns-from-prepared-xf
-  "Transducer to harvest from prepared"
+  "Return a transducer to harvest from prepared"
   [config digest]
   (mapcat-or-fail #(txns-from-prepared-ef digest %)))

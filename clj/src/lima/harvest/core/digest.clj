@@ -1,7 +1,7 @@
 (ns lima.harvest.core.digest)
 
 (defn resolve-accid-xf
-  "Transducer to augment with acc by resolving accid if any in the digest"
+  "Return a transducer to augment with acc by resolving accid if any in the digest"
   [digest]
   (let [{:keys [accids]} digest]
     (map (fn [txn]
@@ -12,13 +12,13 @@
              txn)))))
 
 (defn dedupe-xf
-  "Transducer to dedupe with respect to txnids in the digest"
+  "Return a transducer to dedupe with respect to txnids in the digest"
   [digest]
   (let [{:keys [txnids]} digest]
     (filter #(not (if-let [txnid (:txnid %)] (contains? txnids txnid))))))
 
 (defn infer-secondary-accounts-xf
-  "Transducer to infer secondary accounts from payees and narrations"
+  "Return a transducer to infer secondary accounts from payees and narrations"
   [digest]
   (let [{:keys [payees narrations]} digest]
     (map

@@ -75,6 +75,7 @@
 
 
 (defn pairing-xf
+  "Return a (stateful) transducer to pair opposite transactions up to n-days apart"
   [date-fn n-days]
   (fn [rf]
     (let [state (volatile! (transient {}))] ;; keyed by date, of transient
