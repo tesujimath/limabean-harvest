@@ -6,7 +6,9 @@
             [lima.harvest.core.config :refer [DEFAULT-CONFIG]]
             [lima.harvest.core.harvest :as harvest]
             [failjure.core :as f]
-            [lima.harvest.core.format :as format]))
+            [lima.harvest.core.format :as format]
+            [lima.harvest.core.pairing :as pairing]
+            [clojure.tools.logging :as log]))
 
 
 (defn harvest-txns
@@ -14,7 +16,12 @@
   [config digest import-paths]
   (into []
         (comp (prepare/xf config digest)
-              (harvest/txns-from-prepared-xf config digest))
+              (harvest/txns-from-prepared-xf config digest)
+              (if-let [pairing (:pairing config)]
+                (let [window (or (:window pairing) 0)
+                      _ (log/info "pairing across" window "days")]
+                  (pairing/pairing-xf window))
+                identity))
         import-paths))
 
 

@@ -10,6 +10,7 @@
                 :ingester ["hull-csv" :path],
                 :name "first direct CSV",
                 :selector {:path-glob "**/first-direct/**.csv"}}],
+ :pairing {:window 3},
  :realizers
    [{;; TODO Kiwibank OFX1 should inherit from Generic OFX1, somehow
      :bal {:accid {:key :acctid, :src :hdr},

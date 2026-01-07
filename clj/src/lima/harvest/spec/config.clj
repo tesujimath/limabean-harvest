@@ -43,9 +43,14 @@
   (s/keys :req-un [::name ::selector ::txn] :opt-un [::bal ::txn-fn]))
 
 
+(s/def ::window int?)
+
 
 (s/def ::classifiers (s/coll-of ::classifier :kind vector?))
 (s/def ::realizers (s/coll-of ::realizer :kind vector?))
+(s/def ::pairing (s/keys :opt-un [::window]))
+
+
 (s/def ::path string?)
 
 (s/def ::raw-config (s/keys :req-un [::classifiers ::realizers]))
