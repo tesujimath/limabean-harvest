@@ -71,13 +71,11 @@
   "Classify, augment, and ingest a single import file, and resolve its realizer"
   [config digest import-path]
   (f/attempt-all [classified (classify config import-path)
-                  _ (tel/log! ["classified" import-path "as"
-                               (:name classified)])
+                  _ (tel/log! {:id ::classify, :data classified})
                   augmented (augment digest classified)
                   ingested (ingest augmented)
                   realizer (get-realizer config ingested)
-                  _ (tel/log! ["realizing" import-path "using" (:name realizer)
-                               realizer])]
+                  _ (tel/log! {:id ::get-realizer, :data realizer})]
     (merge ingested
            {:meta (merge (:meta ingested) {:realizer (:name realizer)}),
             :realizer realizer})))

@@ -1,7 +1,8 @@
 (ns lima.harvest.core.realize
   (:require [clojure.string :as str]
+            [failjure.core :as f]
             [java-time.api :as jt]
-            [failjure.core :as f]))
+            [lima.harvest.core.correlation :as correlation]))
 
 (defn realize-field
   [hdr txn r]
@@ -23,11 +24,12 @@
 (defn realize-txn
   "Realize the transaction, and if txn-fn is defined, apply that after the event."
   [realizer txn-fn hdr txn]
-  (let [realized (into {}
-                       (map (fn [[k v]]
-                              [k (realize-field hdr txn (get realizer k))])
-                         realizer))]
-    (if txn-fn (txn-fn realized) realized)))
+  (let [txn1 (into {}
+                   (map (fn [[k v]] [k
+                                     (realize-field hdr txn (get realizer k))])
+                     realizer))
+        txn2 (if txn-fn (txn-fn txn1) txn1)]
+    (correlation/with-id-from txn2 txn)))
 
 (defn xf
   "Transducer to realize transactions"
