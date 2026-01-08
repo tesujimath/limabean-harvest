@@ -1,14 +1,14 @@
 (ns lima.harvest.app
   (:require [cli-matic.core :as cli-matic]
+            [failjure.core :as f]
             [lima.harvest.adapter.beanfile :as beanfile]
             [lima.harvest.adapter.config :as config]
             [lima.harvest.adapter.prepare :as prepare]
             [lima.harvest.core.config :refer [DEFAULT-CONFIG]]
-            [lima.harvest.core.harvest :as harvest]
-            [failjure.core :as f]
             [lima.harvest.core.format :as format]
+            [lima.harvest.core.harvest :as harvest]
             [lima.harvest.core.pairing :as pairing]
-            [clojure.tools.logging :as log]))
+            [taoensso.telemere :as tel]))
 
 
 (defn harvest-txns
@@ -19,7 +19,7 @@
               (harvest/txns-from-prepared-xf config digest)
               (if-let [pairing (:pairing config)]
                 (let [window (or (:window pairing) 0)
-                      _ (log/info "pairing across" window "days")]
+                      _ (tel/log! ["pairing across" window "days"])]
                   (pairing/pairing-xf window))
                 identity))
         import-paths))

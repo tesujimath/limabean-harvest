@@ -1,5 +1,7 @@
 (ns lima.harvest.core.pairing
-  (:require [java-time.api :as jt]))
+  (:require [java-time.api :as jt]
+            ;; TODO remove logging
+            [taoensso.telemere :as tel]))
 
 
 
