@@ -44,9 +44,8 @@
   "Format a post for a secondary acc, with comment if any at COMMENT-COLUMN"
   [acc2]
   (let [indent-acc (format "%s%s" INDENT (:name acc2))
-        infer-count (:infer-count acc2)
-        infer-category (:infer-category acc2)]
-    (if (and infer-count infer-category)
+        infer (:infer acc2)]
+    (if infer
       (let [width (count indent-acc)
             n-pad (max 1 (- COMMENT-COLUMN (+ width 1)))
             pad (apply str (repeat n-pad " "))
@@ -54,8 +53,8 @@
         (format "%s%s; inferred from %d %s%s\n"
                 indent-acc
                 pad
-                infer-count
-                infer-category
+                (:count infer)
+                (:category infer)
                 plural))
       (format "%s\n" indent-acc))))
 

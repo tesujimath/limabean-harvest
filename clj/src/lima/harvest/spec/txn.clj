@@ -1,27 +1,75 @@
 (ns lima.harvest.spec.txn
   (:require [clojure.spec.alpha :as s]
-            [java-time.api :as jt]))
+            [clojure.string :as str]
+            [clojure.test.check.generators :as gen]
+            [java-time.api :as jt])
+  (:import [java.time LocalDate]
+           [java.math BigDecimal]))
 
-(s/def ::acc string?)
-(s/def ::accid string?)
+;; custom generators
+
+(def subacc-gen
+  (gen/let [first (gen/elements (map char (range (int \A) (inc (int \Z)))))
+            rest (gen/vector (gen/elements (map char
+                                             (range (int \a) (inc (int \z)))))
+                             2
+                             4)]
+    (str first (apply str rest))))
+
+(def acc-gen
+  (gen/let [type (gen/elements ["Assets" "Liabilities" "Equity" "Income"
+                                "Expenses"])
+            subaccs (gen/vector subacc-gen 1 3)]
+    (format "%s:%s" type (str/join ":" subaccs))))
+
+(def accid-gen (gen/fmap #(format "acc-%d" %) (gen/choose 100000 999999)))
+
+(def cur-gen (gen/elements ["CAD" "GBP" "EUR" "NZD"]))
+
+(def date-gen
+  (gen/fmap (fn [days-since-epoch] (LocalDate/ofEpochDay days-since-epoch))
+            (gen/choose 15000 20000)))
+
+(def infer-category-gen (gen/elements ["payee" "narration"]))
+
+(defn cents->units [cents] (BigDecimal. (.toBigInteger (bigint cents)) 2))
+(def units-pos-gen (gen/fmap cents->units (gen/choose 1 25000)))
+(def units-neg-gen (gen/fmap cents->units (gen/choose -25000 -1)))
+(def units-gen (gen/fmap cents->units (gen/choose -25000 25000)))
+
+
+(def payee-gen (gen/fmap #(format "payee-%02d" %) (gen/choose 1 99)))
+(def narration-gen
+  (gen/fmap clojure.string/join (gen/vector gen/char-alpha 3 8)))
+
+(def txnid-gen (gen/fmap #(format "txn-%d" %) (gen/choose 100000 999999)))
+
+
+;; specs
+
+(s/def ::acc (s/with-gen string? (fn [] acc-gen)))
+(s/def ::accid (s/with-gen string? (fn [] accid-gen)))
 (s/def ::comment string?)
-(s/def ::cur string?)
-(s/def ::date jt/local-date?)
-(s/def ::infer-category string?)
-(s/def ::infer-count int?)
-(s/def ::name string?)
-(s/def ::narration string?)
-(s/def ::narration2 string?)
-(s/def ::payee string?)
-(s/def ::payee2 string?)
-(s/def ::txnid string?)
-(s/def ::txnid2 string?)
-(s/def ::units decimal?)
+(s/def ::cur (s/with-gen string? (fn [] cur-gen)))
+(s/def ::date (s/with-gen jt/local-date? (fn [] date-gen)))
+
+(s/def ::category (s/with-gen string? (fn [] infer-category-gen)))
+(s/def ::count (s/with-gen int? (fn [] (gen/choose 1 50))))
+(s/def ::infer (s/keys :req-un [::category ::count]))
+
+(s/def ::name (s/with-gen string? (fn [] acc-gen)))
+(s/def ::narration (s/with-gen string? (fn [] narration-gen)))
+(s/def ::narration2 (s/with-gen string? (fn [] narration-gen)))
+(s/def ::payee (s/with-gen string? (fn [] payee-gen)))
+(s/def ::payee2 (s/with-gen string? (fn [] payee-gen)))
+(s/def ::txnid (s/with-gen string? (fn [] txnid-gen)))
+(s/def ::txnid2 (s/with-gen string? (fn [] txnid-gen)))
+(s/def ::units (s/with-gen decimal? (fn [] units-gen)))
+
 
 ;; secondary accounts have a name, and optionally information about the
 ;; inference
-(s/def ::acc2
-  (s/keys :req-un [::name] :opt-un [::infer-count ::infer-category]))
+(s/def ::acc2 (s/keys :req-un [::name] :opt-un [::infer]))
 
 (s/def ::realized-txn
   (s/keys :req-un [::date ::units ::cur]

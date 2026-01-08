@@ -32,18 +32,19 @@
                   (let [all-account-names (keys acc-count)
                         candidate-account-names (filterv #(not= % primary-acc)
                                                   all-account-names)
-                        annotated-accounts (mapv (fn [acc]
-                                                   {:name acc,
-                                                    :infer-count (get acc-count
-                                                                      acc),
-                                                    :infer-category category})
-                                             candidate-account-names)]
+                        annotated-accounts
+                          (mapv (fn [acc]
+                                  {:name acc,
+                                   :infer {:count (get acc-count acc),
+                                           :category category}})
+                            candidate-account-names)]
                     (vec (sort
                            ;; by infer-count descending, then by name
                            ;; ascending
                            (fn [acc0 acc1]
-                             (let [count-cmp (compare (:infer-count acc1)
-                                                      (:infer-count acc0))]
+                             (let [count-cmp (compare
+                                               (get-in acc1 [:infer :count])
+                                               (get-in acc0 [:infer :count]))]
                                (if (not= count-cmp 0)
                                  count-cmp
                                  (compare (:name acc0) (:name acc1)))))

@@ -1,4 +1,5 @@
-(ns lima.harvest.core.pairing)
+(ns lima.harvest.core.pairing
+  (:require [java-time.api :as jt]))
 
 
 
@@ -23,7 +24,11 @@
              a1 (:acc txn1)
              s0 (or (:acc2 txn0) [])
              s1 (or (:acc2 txn1) [])]
-         (and (= u0 (- u1)) (unique-match? a0 s1) (unique-match? a1 s0)))))
+         (and (number? u0)
+              (number? u1)
+              (= u0 (- u1))
+              (unique-match? a0 s1)
+              (unique-match? a1 s0)))))
 
 
 (defn pair
@@ -48,30 +53,33 @@
 
 
 ;; try pairing a transaction into a vector of txns
-(defn try-pair
+(defn try-pair!
   [txns txn2]
   (reduce (fn [[acc paired?] txn]
             (if (and (not paired?) (is-pair? txn2 txn))
-              [(conj acc (pair txn txn2)) true]
-              [(conj acc txn) paired?]))
-    [[] false]
-    txns))
+              [(conj! acc (pair txn txn2)) true]
+              [(conj! acc txn) paired?]))
+    [(transient []) false]
+    (persistent! txns)))
 
-(defn insert-with-pairing
-  "Pair transactions, from a (persistent) map by date of (transient) vec of txn"
-  [j-fn j-plus-fn j-window m txn]
-  (let [j-base (j-fn txn)]
+(defn insert-with-pairing!
+  "Attempt to pair a transaction into a transient map by date of transient vec of txn.
+
+  If no pair is found across window days in either direction, simply append in its base date.
+  "
+  [window m txn]
+  (let [j-base (:date txn)]
     (loop [j-offset 0]
-      (let [j (j-plus-fn j-base j-offset)
-            [txns paired?] (try-pair txn (or (get m j) []))]
+      (let [j (jt/plus j-base (jt/days j-offset))
+            [txns paired?] (try-pair! (or (get m j) (transient [])) txn)]
         (if paired?
-          (assoc m j txns)
+          (assoc! m j txns)
           (if (> j-offset 0)
             (recur (- j-offset))
-            (let [next-offset (j-plus-fn 1 (abs j-offset))]
-              (if (<= next-offset j-window)
+            (let [next-offset (inc (abs j-offset))]
+              (if (<= next-offset window)
                 (recur next-offset)
-                (update m j-base #(conj txn (or % [])))))))))))
+                (update m j-base #(conj! txn (or % (transient []))))))))))))
 
 
 (defn pairing-xf
