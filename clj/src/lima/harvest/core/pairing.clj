@@ -1,9 +1,5 @@
 (ns lima.harvest.core.pairing
-  (:require [java-time.api :as jt]
-            ;; TODO remove logging
-            [taoensso.telemere :as tel]))
-
-
+  (:require [java-time.api :as jt]))
 
 (defn unique-match?
   "Return whether primary account `a` uniquely matches secondary account `s`"
@@ -53,40 +49,50 @@
           (if narration2 (assoc with-payee :narration2 narration2) with-payee)]
     with-narration))
 
+(defn try-pair
+  "Try to pair txn2 into txns, returning [txns-with-paired true] or [txns false]
 
-;; try pairing a transaction into a vector of txns
-(defn try-pair!
+  txns may be nil, in which case the return value is [nil false]"
   [txns txn2]
-  (reduce (fn [[acc paired?] txn]
-            (if (and (not paired?) (is-pair? txn2 txn))
-              [(conj! acc (pair txn txn2)) true]
-              [(conj! acc txn) paired?]))
-    [(transient []) false]
-    (persistent! txns)))
+  (if txns
+    (let [[acc paired?] (reduce (fn [[acc paired?] txn]
+                                  (if (and (not paired?) (is-pair? txn2 txn))
+                                    [(conj! acc (pair txn txn2)) true]
+                                    [(conj! acc txn) paired?]))
+                          [(transient []) false]
+                          txns)]
+      [(persistent! acc) paired?])
+    [nil false]))
+
+;; TODO put this somewhere more general
+(defn update!
+  "The missing update for transient maps"
+  [tm k f & args]
+  (assoc! tm k (apply f (get tm k) args)))
 
 (defn insert-with-pairing!
-  "Attempt to pair a transaction into a transient map by date of transient vec of txn.
+  "Attempt to pair a transaction into a transient map by date of vec of txn.
 
   If no pair is found across window days in either direction, simply append in its base date.
   "
-  [window m txn]
+  [window tm txn]
   (let [j-base (:date txn)]
     (loop [j-offset 0]
       (let [j (jt/plus j-base (jt/days j-offset))
-            [txns paired?] (try-pair! (or (get m j) (transient [])) txn)]
+            [txns paired?] (try-pair (get tm j) txn)]
         (if paired?
-          (assoc! m j txns)
+          (assoc! tm j txns)
           (if (> j-offset 0)
             (recur (- j-offset))
             (let [next-offset (inc (abs j-offset))]
               (if (<= next-offset window)
                 (recur next-offset)
-                (update m j-base #(conj! txn (or % (transient []))))))))))))
+                (update! tm j-base #(conj (or % []) txn))))))))))
 
 
 (defn pairing-xf
-  "Return a (stateful) transducer to pair opposite transactions up to n-days apart"
-  [n-days]
+  "Return a (stateful) transducer to pair opposite transactions within specified window"
+  [window]
   (fn [rf]
     (let [state (volatile! (transient {}))] ;; keyed by date, of transient
                                             ;; vec of txn
@@ -96,15 +102,11 @@
         ;; completion
         ([result]
          (let [m (persistent! @state)
-               result' (reduce (fn [result k]
-                                 (reduce rf result (persistent! (get m k))))
+               result' (reduce (fn [result k] (reduce rf result (get m k)))
                          result
                          (sort (keys m)))]
            (rf result')))
         ;; step
-        ([result item]
-         (let [k (:date item)
-               m @state
-               txns (get m k (transient []))]
-           (vreset! state (assoc! m k (conj! txns item))))
+        ([result txn]
+         (let [tm @state] (vreset! state (insert-with-pairing! window tm txn)))
          result)))))

@@ -49,7 +49,7 @@
       (let [width (count indent-acc)
             n-pad (max 1 (- COMMENT-COLUMN (+ width 1)))
             pad (apply str (repeat n-pad " "))
-            plural (if (> infer-count 1) "s" "")]
+            plural (if (> (:count infer) 1) "s" "")]
         (format "%s%s; inferred from %d %s%s\n"
                 indent-acc
                 pad
