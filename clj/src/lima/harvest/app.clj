@@ -11,6 +11,7 @@
             [lima.harvest.core.format :as format]
             [lima.harvest.core.pairing :as pairing]
             [lima.harvest.core.realize :as realize]
+            [lima.harvest.core.sort :as sort]
             [lima.harvest.core.xf :as xf]
             [taoensso.telemere :as tel]))
 
@@ -37,17 +38,18 @@
 (defn harvest-txns
   "Harvest transaction from import paths"
   [config digest import-paths]
-  (into []
-        (comp (prepare/xf config digest)
-              ;; prepared stream
-              (txns-from-prepared-xf config digest)
-              ;; txn stream
-              (if-let [pairing (:pairing config)]
-                (let [window (or (:window pairing) 0)]
-                  (pairing/pairing-xf window))
-                identity)
-              (logging/xf {:id ::ordered-txn}))
-        import-paths))
+  (let [date-insertion-fn! (if-let [pairing (:pairing config)]
+                             (let [window (or (:window pairing) 0)]
+                               (pairing/merge-pairable-txns! window))
+                             sort/append-to-txns!)]
+    (into []
+          (comp (prepare/xf config digest)
+                ;; prepared stream
+                (txns-from-prepared-xf config digest)
+                ;; txn stream
+                (sort/by-date-xf date-insertion-fn!)
+                (logging/xf {:id ::ordered-txn}))
+          import-paths)))
 
 (defn run
   "lima-harvest entry point after CLI argument processing"
