@@ -24,12 +24,12 @@
 (defn realize-txn
   "Realize the transaction, and if txn-fn is defined, apply that after the event."
   [realizer txn-fn hdr txn]
-  (let [txn1 (into {}
-                   (map (fn [[k v]] [k
-                                     (realize-field hdr txn (get realizer k))])
-                     realizer))
-        txn2 (if txn-fn (txn-fn txn1) txn1)]
-    (correlation/with-id-from txn2 txn)))
+  (-> (into {}
+            (map (fn [[k v]] [k (realize-field hdr txn (get realizer k))])
+              realizer))
+      (#(if txn-fn (txn-fn %) %))
+      (correlation/with-id-from txn)
+      (assoc :dct :txn)))
 
 (defn xf
   "Transducer to realize transactions"

@@ -47,6 +47,7 @@
 
 ;; specs
 
+(s/def ::dct #{:txn :bal})
 (s/def ::acc (s/with-gen string? (fn [] acc-gen)))
 (s/def ::accid (s/with-gen string? (fn [] accid-gen)))
 (s/def ::comment string?)
@@ -72,7 +73,7 @@
 (s/def ::acc2 (s/keys :req-un [::name] :opt-un [::infer]))
 
 (s/def ::realized-txn
-  (s/keys :req-un [::date ::units ::cur]
+  (s/keys :req-un [::dct ::date ::units ::cur]
           :opt-un [::accid ::txnid ::payee ::narration]))
 
 (s/def ::qualified-txn (s/merge ::realized-txn (s/keys :opt-un [::acc ::acc2])))

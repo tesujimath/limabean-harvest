@@ -6,7 +6,7 @@
   [a s]
   (and (= (count s) 1) (= a (:name (first s)))))
 
-(defn is-pair?
+(defn pairable-txns?
   "Do the transactions comprise a pair, that is, values sum to zero and the accounts match counter-symmetrically.
 
   Note: dates are ignored here, a date threshold should be applied before calling this
@@ -14,7 +14,9 @@
   no longer available.
   "
   [txn0 txn1]
-  (and (not (contains? txn0 :txnid2))
+  (and (= (:dct txn0) :txn)
+       (= (:dct txn1) :txn)
+       (not (contains? txn0 :txnid2))
        (not (contains? txn1 :txnid2))
        (let [u0 (:units txn0)
              u1 (:units txn1)
@@ -56,7 +58,8 @@
   [txns txn2]
   (if txns
     (let [[acc paired?] (reduce (fn [[acc paired?] txn]
-                                  (if (and (not paired?) (is-pair? txn2 txn))
+                                  (if (and (not paired?)
+                                           (pairable-txns? txn2 txn))
                                     [(conj! acc (pair txn txn2)) true]
                                     [(conj! acc txn) paired?]))
                           [(transient []) false]

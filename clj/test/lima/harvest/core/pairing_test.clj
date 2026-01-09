@@ -4,30 +4,41 @@
             [lima.harvest.core.gen-txn :as gen-txn]
             [lima.harvest.core.pairing :as sut]))
 
-(deftest is-pair?-test
-  (testing "is-pair?"
-    (is
-      (sut/is-pair?
-        {:units 5, :acc "Assets:Current", :acc2 [{:name "Assets:Savings"}]}
-        {:units -5, :acc "Assets:Savings", :acc2 [{:name "Assets:Current"}]}))))
+(deftest pairable-txns?-test
+  (testing "pairable-txns?"
+    (is (sut/pairable-txns? {:dct :txn,
+                             :units 5,
+                             :acc "Assets:Current",
+                             :acc2 [{:name "Assets:Savings"}]}
+                            {:dct :txn,
+                             :units -5,
+                             :acc "Assets:Savings",
+                             :acc2 [{:name "Assets:Current"}]}))))
 
 (deftest is-not-pair?-test
   (testing "is-not-pair?"
-    (is (not (sut/is-pair?
-               {:units 5, :acc "Assets:Current"}
-               {:units -5, :acc "Assets:Savings", :acc2 ["Assets:Current"]})))
-    (is (not (sut/is-pair? {:units 5,
-                            :acc "Assets:Current",
-                            :acc2 [{:name "Assets:Savings"}]}
-                           {:units -6,
-                            :acc "Assets:Savings",
-                            :acc2 [{:name "Assets:Current"}]})))
-    (is (not
-          (sut/is-pair?
-            {:units 5, :acc "Assets:Current", :acc2 [{:name "Assets:Savings"}]}
-            {:units -5,
-             :acc "Assets:Savings",
-             :acc2 [{:name "Assets:Current"} {:name "Assets:Another"}]})))))
+    (is (not (sut/pairable-txns? {:dct :txn, :units 5, :acc "Assets:Current"}
+                                 {:dct :txn,
+                                  :units -5,
+                                  :acc "Assets:Savings",
+                                  :acc2 ["Assets:Current"]})))
+    (is (not (sut/pairable-txns? {:dct :txn,
+                                  :units 5,
+                                  :acc "Assets:Current",
+                                  :acc2 [{:name "Assets:Savings"}]}
+                                 {:dct :txn,
+                                  :units -6,
+                                  :acc "Assets:Savings",
+                                  :acc2 [{:name "Assets:Current"}]})))
+    (is (not (sut/pairable-txns? {:dct :txn,
+                                  :units 5,
+                                  :acc "Assets:Current",
+                                  :acc2 [{:name "Assets:Savings"}]}
+                                 {:dct :txn,
+                                  :units -5,
+                                  :acc "Assets:Savings",
+                                  :acc2 [{:name "Assets:Current"}
+                                         {:name "Assets:Another"}]})))))
 
 (deftest pair-test
   (testing "pair"

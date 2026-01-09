@@ -21,7 +21,7 @@
             cur (s/gen ::txn/cur)]
     (into {}
           (keep (fn [[k v]] (when v [k v])))
-          [[:date date] [:accid accid] [:payee payee] [:units units]
+          [[:dct :txn] [:date date] [:accid accid] [:payee payee] [:units units]
            [:cur cur]])))
 
 (defn qualified-txn-gen
@@ -40,8 +40,8 @@
              cur (s/gen ::txn/cur)]
      (into {}
            (keep (fn [[k v]] (when v [k v])))
-           [[:date date] [:accid accid] [:acc acc] [:acc2 acc2] [:payee payee]
-            [:narration narration] [:units units] [:cur cur]]))))
+           [[:dct :txn] [:date date] [:accid accid] [:acc acc] [:acc2 acc2]
+            [:payee payee] [:narration narration] [:units units] [:cur cur]]))))
 
 (defn pairable-txns-gen
   "Generate pairable txns"
