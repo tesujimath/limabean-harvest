@@ -19,8 +19,20 @@
 
 (defn xf
   "Logging transducer"
-  [{:keys [ns id level data]}]
+  [{:keys [id level data]}]
   (let [level (or level :info)
-        ns (or ns *ns*)
         data (or data {})]
     (map (fn [x] (tel/log! {:id id, :level level, :data (merge data x)}) x))))
+
+(defn wrap
+  "Wrap a transducer in a logging decorator"
+  [f opts]
+  (comp f (xf opts)))
+
+(defn initialize
+  "Initialize logging, only if environment variable LIMABEAN_HARVEST_LOGPATH is defined."
+  []
+  (tel/remove-handler! :default/console)
+  (if-let [logpath (System/getenv "LIMABEAN_HARVEST_LOGPATH")]
+    (do (tel/add-handler! :json-file (json-file-handler logpath))
+        (tel/call-on-shutdown! (fn [] (tel/stop-handlers!))))))

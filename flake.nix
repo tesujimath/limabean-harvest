@@ -78,6 +78,8 @@
 
             shellHook = ''
               PATH=$PATH:$(pwd)/scripts.dev:$(pwd)/rust/target/debug
+
+              export LIMABEAN_HARVEST_LOGPATH=$(pwd)/limabean-harvest-log.json
             '';
           };
 

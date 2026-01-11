@@ -85,6 +85,11 @@ Error: invalid balance
 2020-02-02  -15.00 NZD   935.00 NZD  Drinks
 ```
 
+## Logging
+
+If the environment variable `LIMABEAN_HARVEST_LOGPATH` is defined, that will accumulate JSON format structured logging, best viewed with a JSON log viewer such as [hl](https://github.com/pamburus/hl).
+
+
 ## Alternatives
 
 `limabean-harvest` is very new.  For now, or perhaps forever, you may be better served by these alternatives:

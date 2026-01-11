@@ -20,14 +20,14 @@
   "Eduction to harvest txns from a single prepared import file"
   [digest prepared]
   (let [{:keys [hdr txns realizer]} prepared]
-    (eduction (comp (correlation/xf)
-                    (logging/xf {:id ::ingested-txn, :data {:hdr hdr}})
-                    (realize/xf realizer hdr)
-                    (logging/xf {:id ::realized-txn})
+    (eduction (comp (logging/wrap (correlation/xf)
+                                  {:id ::ingested-txn, :data {:hdr hdr}})
+                    (logging/wrap (realize/xf realizer hdr)
+                                  {:id ::realized-txn})
                     (digest/resolve-accid-xf digest)
                     (digest/dedupe-xf digest)
-                    (digest/infer-secondary-accounts-xf digest)
-                    (logging/xf {:id ::resolved-txn}))
+                    (logging/wrap (digest/infer-secondary-accounts-xf digest)
+                                  {:id ::resolved-txn}))
               txns)))
 
 (defn txns-from-prepared-xf
@@ -47,18 +47,14 @@
                 ;; prepared stream
                 (txns-from-prepared-xf config digest)
                 ;; txn stream
-                (sort/by-date-xf date-insertion-fn!)
-                (logging/xf {:id ::ordered-txn}))
+                (logging/wrap (sort/by-date-xf date-insertion-fn!)
+                              {:id ::ordered-txn}))
           import-paths)))
 
 (defn run
   "limabean-harvest entry point after CLI argument processing"
   [maybe-config-path maybe-beanpath import-paths]
-  (tel/add-handler! :json-file
-                    (logging/json-file-handler "limabean-harvest-log.json"))
-  (tel/remove-handler! :default/console)
-  (tel/call-on-shutdown! (fn [] (tel/stop-handlers!)))
-  ;;(binding [*out* *err*] (println (tel/get-handlers)))
+  (logging/initialize)
   (f/attempt-all [config (if maybe-config-path
                            (config/read-from-file maybe-config-path)
                            DEFAULT-CONFIG)
