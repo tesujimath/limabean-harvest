@@ -6,7 +6,7 @@
                 :name "Generic OFX",
                 :selector {:path-glob "**.ofx"}}
                {:hdr {:cur "GBP", :dialect "first-direct.csv"},
-                :hdr-fn lima.harvest.api/infer-accid-from-path,
+                :hdr-fn limabean.harvest.api/infer-accid-from-path,
                 :ingester ["hull-csv" :path],
                 :name "first direct CSV",
                 :selector {:path-glob "**/first-direct/**.csv"}}],
@@ -26,7 +26,7 @@
            :payee {:key :name, :src :txn},
            :txnid [{:key :acctid, :src :hdr} "." {:key :fitid, :src :txn}],
            :units {:key :trnamt, :src :txn, :type :decimal}},
-     :txn-fn lima.harvest.api.contrib.kiwibank-ofx1/clean-payee-narration}
+     :txn-fn limabean.harvest.api.contrib.kiwibank-ofx1/clean-payee-narration}
     {:bal {:accid {:key :acctid, :src :hdr},
            :cur {:key :curdef, :src :hdr},
            :date {:fmt "yyyyMMdd", :key :dtasof, :src :hdr, :type :date},
@@ -51,4 +51,4 @@
            :date {:fmt "dd/MM/yyyy", :key :date, :src :txn, :type :date},
            :description {:key :description, :src :hdr},
            :units {:key :amount, :src :txn, :type :decimal}},
-     :txn-fn lima.harvest.api.contrib.first-direct/payee-narration}]}
+     :txn-fn limabean.harvest.api.contrib.first-direct/payee-narration}]}

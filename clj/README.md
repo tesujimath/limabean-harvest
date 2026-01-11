@@ -1,10 +1,10 @@
-# lima.harvest
+# limabean.harvest
 
 This is a new importer and framework for [Beancount](https://github.com/beancount/beancount) using [Rust](https://rust-lang.org) and [Clojure](https://clojure.org/) and the [Lima parser](https://github.com/tesujimath/beancount-parser-lima).
 
 ## Installation
 
-Download from https://github.com/tesujimath/beancount-lima-harvest
+Download from https://github.com/tesujimath/limabean-harvest
 
 ## Usage
 
@@ -20,7 +20,7 @@ Run the project, overriding the name to be greeted:
     $ clojure -X:run-x :name '"Someone"'
     Hello, Someone!
 
-Run the project directly, via `:main-opts` (`-m lima.main`):
+Run the project directly, via `:main-opts` (`-m limabean.main`):
 
     $ clojure -M:run-m
     Hello, World!
@@ -48,7 +48,7 @@ from `build.clj`.
 
 Run that uberjar:
 
-    $ java -jar target/net.clojars.lima/lima-0.1.0-SNAPSHOT.jar
+    $ java -jar target/net.clojars.limabean/limabean-0.1.0-SNAPSHOT.jar
 
 ## Options
 

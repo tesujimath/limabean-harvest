@@ -1,11 +1,11 @@
 [package]
-name = "beancount-lima-harvest"
+name = "limabean-harvest"
 version = "0.6.0"
 edition = "2024"
 license = "MIT OR Apache-2.0"
-description = "Beancount importer backend for Lima"
-homepage = "https://github.com/tesujimath/beancount-lima-harvest"
-repository = "https://github.com/tesujimath/beancount-lima-harvest"
+description = "Beancount importer backend for limabean-harvest"
+homepage = "https://github.com/tesujimath/limabean-harvest"
+repository = "https://github.com/tesujimath/limabean-harvest"
 readme = "../README.md"
 
 [dependencies]

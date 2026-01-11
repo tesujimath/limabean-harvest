@@ -1,4 +1,4 @@
-# beancount-lima-harvest
+# limabean-harvest
 
 This is a new importer and framework for [Beancount](https://github.com/beancount/beancount) using [Rust](https://rust-lang.org) and [Clojure](https://clojure.org/) and the [Lima parser](https://github.com/tesujimath/beancount-parser-lima).
 
@@ -24,11 +24,11 @@ Phase 2 uses a digest of a Beancount file for context, which enables:
 
 ### Caveats
 
-[beancount_reds_importers](https://reds-rants.netlify.app/personal-finance/make-importers-easy-to-write-and-write-lots-of-them/) makes a strong case for code-as-config.  It is possible that the `lima-harvest` approach of mostly declarative configuration with minimal custom code may be insufficient for more complex needs.  In which case, go and enjoy `beancount_reds_importers`. 😊
+[beancount_reds_importers](https://reds-rants.netlify.app/personal-finance/make-importers-easy-to-write-and-write-lots-of-them/) makes a strong case for code-as-config.  It is possible that the `limabean-harvest` approach of mostly declarative configuration with minimal custom code may be insufficient for more complex needs.  In which case, go and enjoy `beancount_reds_importers`. 😊
 
 ## Usage
 
-`lima-harvest` provides the following features:
+`limabean-harvest` provides the following features:
 - import from CSV or OFX v1 into Beancount format
 - lookup primary account for import from OFX `acctid` field
 - infer secondary accounts for postings from payees and narrations in existing Beancount file
@@ -57,7 +57,7 @@ In case of multiple matches, all are included, along with a count of match occur
 
 When money is moved between accounts, the import file for each account contains a record of the transaction, which leads to a duplicate transaction traditionally requiring manual elimination.
 
-`lima-harvest` has heuristics to pair up transactions which are imported in the same group, removing the need for this manual step.
+`limabean-harvest` has heuristics to pair up transactions which are imported in the same group, removing the need for this manual step.
 
 This requires secondary account inference to have allocated a unique candidate account.  (Multiple matches during secondary account inference precludes transaction pairing.)
 
@@ -73,7 +73,7 @@ most recent balance assertion are printed along with the error message.
 
 For example:
 ```
-aya> lima --ledger examples/beancount/balance.beancount
+aya> limabean --ledger examples/beancount/balance.beancount
 Error: invalid balance
     ╭─[ examples/beancount/balance.beancount:27:1 ]
  27 │ 2020-02-28 balance Assets:Bank:Current   940.00 NZD
@@ -87,7 +87,7 @@ Error: invalid balance
 
 ## Alternatives
 
-`lima-harvest` is very new.  For now, or perhaps forever, you may be better served by these alternatives:
+`limabean-harvest` is very new.  For now, or perhaps forever, you may be better served by these alternatives:
 
 - [beancount_reds_importers](https://github.com/redstreet/beancount_reds_importers)
 - [beancount-import](https://github.com/jbms/beancount-import)

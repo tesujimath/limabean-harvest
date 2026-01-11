@@ -7,7 +7,7 @@ use std::{
 };
 
 #[derive(Parser)]
-#[command(version, about = "Hull an CSV file for import into lima-harvest", long_about = None)]
+#[command(version, about = "Hull an CSV file for import into limabean-harvest", long_about = None)]
 struct Cli {
     /// File to ingest
     csv_path: PathBuf,

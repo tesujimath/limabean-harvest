@@ -146,26 +146,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "beancount-lima-harvest"
-version = "0.6.0"
-dependencies = [
- "beancount-parser-lima",
- "clap",
- "color-eyre",
- "csv",
- "hashbrown 0.15.5",
- "regex",
- "rust_decimal",
- "serde",
- "serde_json",
- "sgmlish",
- "slugify",
- "strum",
- "strum_macros",
- "time",
-]
-
-[[package]]
 name = "beancount-parser-lima"
 version = "0.14.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -594,6 +574,26 @@ name = "libc"
 version = "0.2.178"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "37c93d8daa9d8a012fd8ab92f088405fb202ea0b6ab73ee2482ae66af4f42091"
+
+[[package]]
+name = "limabean-harvest"
+version = "0.6.0"
+dependencies = [
+ "beancount-parser-lima",
+ "clap",
+ "color-eyre",
+ "csv",
+ "hashbrown 0.15.5",
+ "regex",
+ "rust_decimal",
+ "serde",
+ "serde_json",
+ "sgmlish",
+ "slugify",
+ "strum",
+ "strum_macros",
+ "time",
+]
 
 [[package]]
 name = "linux-raw-sys"

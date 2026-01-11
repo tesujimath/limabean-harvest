@@ -5,7 +5,7 @@ use std::path::PathBuf;
 use std::{fs::read_to_string, path::Path};
 
 #[derive(Parser)]
-#[command(version, about = "Hull an OFX file for import into lima-harvest", long_about = None)]
+#[command(version, about = "Hull an OFX file for import into limabean-harvest", long_about = None)]
 struct Cli {
     /// File to ingest
     ofx_path: PathBuf,

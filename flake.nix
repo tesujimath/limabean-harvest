@@ -1,5 +1,5 @@
 {
-  description = "beancount-lima-harvest importer for Beancount/Lima";
+  description = "limabean-harvest importer for limabean";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
@@ -38,11 +38,11 @@
             clojure
           ];
 
-          beancount-lima-harvest =
+          limabean-harvest =
             let cargo = builtins.fromTOML (builtins.readFile ./rust/Cargo.toml);
             in pkgs.rustPlatform.buildRustPackage
               {
-                pname = "beancount-lima-harvest";
+                pname = "limabean-harvest";
                 version = cargo.package.version;
 
                 src = ./rust;
@@ -52,8 +52,8 @@
                 };
 
                 meta = with pkgs.lib; {
-                  description = "Beancount frontend using Lima parser";
-                  homepage = "https://github.com/tesujimath/beancount-lima";
+                  description = "Import framework and importers for Beancount";
+                  homepage = "https://github.com/tesujimath/limabean-harvest";
                   license = with licenses; [ asl20 mit ];
                   # maintainers = [ maintainers.tesujimath ];
                 };
@@ -81,13 +81,13 @@
             '';
           };
 
-          packages.default = beancount-lima-harvest;
+          packages.default = limabean-harvest;
 
           apps = {
             tests = {
               type = "app";
-              program = "${writeShellScript "beancount-lima-harvest-tests" ''
-                export PATH=${pkgs.lib.makeBinPath (ci-packages ++ [beancount-lima-harvest])}
+              program = "${writeShellScript "limabean-harvest-tests" ''
+                export PATH=${pkgs.lib.makeBinPath (ci-packages ++ [limabean-harvest])}
                 just test
               ''}";
             };

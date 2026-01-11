@@ -2,7 +2,7 @@
 
 set -e
 
-cd beancount-lima/tests/import
+cd limabean/tests/import
 
 exitcode=0
 
@@ -11,9 +11,9 @@ for expected_beancount in *.expected.beancount; do
     ledger_path="${expected_base}.beancount"
     output_path="${expected_base}.actual.beancount"
     echo
-    # TODO fix import tests for lima-harvest
-    echo lima -o standalone --ledger "$ledger_path" import "$expected_base"/*
-    lima -o standalone --ledger "$ledger_path" import "$expected_base"/* >"$output_path"
+    # TODO fix import tests for limabean-harvest
+    echo limabean-harvest -o standalone --ledger "$ledger_path" import "$expected_base"/*
+    limabean-harvest -o standalone --ledger "$ledger_path" import "$expected_base"/* >"$output_path"
     diff -w "$expected_beancount" "$output_path" || {
         echo >&2 "Test failed: $ledger_path"
         diff "$expected_beancount" "$output_path" || true
