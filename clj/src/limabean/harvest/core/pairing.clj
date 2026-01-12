@@ -37,9 +37,6 @@
   (let [{:keys [txnid payee narration]} txn]
     (cond-> txn0
       txnid (assoc :txnid2 txnid)
-      (not txnid)
-        (assoc :comment
-          (format "paired with \"%s\" \"%s\"" (or payee "") (or narration "")))
       payee (assoc :payee2 payee)
       narration (assoc :narration2 narration)
       true (correlation/new-with-provenance [txn0 txn]))))

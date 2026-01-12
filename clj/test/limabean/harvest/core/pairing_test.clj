@@ -81,10 +81,9 @@
                                           :narration :units :cur]]
                          (and (= (select-keys p common-keys)
                                  (select-keys t1 common-keys))
-                              (= (get p :comment)
-                                 (format "paired with \"%s\" \"%s\""
-                                         (or (get t2 :payee) "")
-                                         (or (get t2 :narration) "")))))))
+                              (or (not (:payee t2)) (= (:payee2 p) (:payee t2)))
+                              (or (not (:narration t2))
+                                  (= (:narration2 p) (:narration t2)))))))
 
 (defspec pair-payee-narration-prop-test
          100

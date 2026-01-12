@@ -50,7 +50,6 @@
 (s/def ::dct #{:txn :bal})
 (s/def ::acc (s/with-gen string? (fn [] acc-gen)))
 (s/def ::accid (s/with-gen string? (fn [] accid-gen)))
-(s/def ::comment string?)
 (s/def ::cur (s/with-gen string? (fn [] cur-gen)))
 (s/def ::date (s/with-gen jt/local-date? (fn [] date-gen)))
 
@@ -79,5 +78,4 @@
 (s/def ::qualified-txn (s/merge ::realized-txn (s/keys :opt-un [::acc ::acc2])))
 
 (s/def ::paired-txn
-  (s/merge ::qualified-txn (s/keys :opt-un [::txnid2 ::payee2 ::narration2
-                                            ::comment])))
+  (s/merge ::qualified-txn (s/keys :opt-un [::txnid2 ::payee2 ::narration2])))
