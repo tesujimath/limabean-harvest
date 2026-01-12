@@ -48,14 +48,21 @@
 
 (defn pairable-txns-gen
   "Generate pairable txns"
-  [date-offset]
-  (gen/let [txn (qualified-txn-gen 1 1)
-            accid2 (s/gen ::txn/accid)]
-    [txn
-     (correlation/with-id (merge txn
-                                 {:date (jt/plus (:date txn)
-                                                 (jt/days date-offset)),
-                                  :accid accid2,
-                                  :acc (get-in txn [:acc2 0 :name]),
-                                  :acc2 [{:name (:acc txn)}],
-                                  :units (- (:units txn))}))]))
+  ([] (pairable-txns-gen {}))
+  ([{:keys [date-offset with-txnid]}]
+   (gen/let [txn (qualified-txn-gen 1 1)
+             txn2 (qualified-txn-gen 1 1)
+             accid2 (s/gen ::txn/accid)
+             txnid (s/gen ::txn/txnid)
+             txnid2 (s/gen ::txn/txnid)]
+     (let [txn2 (correlation/with-id
+                  (merge txn2
+                         {:date (jt/plus (:date txn)
+                                         (jt/days (or date-offset 0))),
+                          :accid accid2,
+                          :acc (get-in txn [:acc2 0 :name]),
+                          :acc2 [{:name (:acc txn)}],
+                          :units (- (:units txn))}))]
+       (if (or (nil? with-txnid) with-txnid)
+         [(assoc txn :txnid txnid) (assoc txn2 :txnid txnid2)]
+         [txn txn2])))))

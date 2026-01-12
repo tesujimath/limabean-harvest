@@ -62,16 +62,52 @@
           (sut/pair {:txnid "t1"} {:txnid "t2", :payee "p2", :narration "n2"})
           {:txnid "t1", :txnid2 "t2", :payee2 "p2", :narration2 "n2"}))))
 
-(defspec pair-correlated-prop-test
-         100
-         (prop/for-all [[t1 t2] (gen-txn/pairable-txns-gen 0)]
+(defspec pair-txnid-prop-test
+         5
+         (prop/for-all [[t1 t2] (gen-txn/pairable-txns-gen {:with-txnid true})]
                        (let [p (sut/pair t1 t2)
                              common-keys [:dct :date :accid :acc :acc2 :payee
                                           :narration :units :cur]]
-                         (is (= (select-keys p common-keys)
-                                (select-keys t1 common-keys)))
-                         (is (= (get-in p [:provenance :correlation-ids])
-                                [(:correlation-id t1) (:correlation-id t2)])))))
+                         (and (= (select-keys p common-keys)
+                                 (select-keys t1 common-keys))
+                              (= (get p :txnid) (get t1 :txnid))
+                              (= (get p :txnid2) (get t2 :txnid))))))
+
+(defspec pair-no-txnid-prop-test
+         20
+         (prop/for-all [[t1 t2] (gen-txn/pairable-txns-gen {:with-txnid false})]
+                       (let [p (sut/pair t1 t2)
+                             common-keys [:dct :date :accid :acc :acc2 :payee
+                                          :narration :units :cur]]
+                         (and (= (select-keys p common-keys)
+                                 (select-keys t1 common-keys))
+                              (= (get p :comment)
+                                 (format "paired with \"%s\" \"%s\""
+                                         (or (get t2 :payee) "")
+                                         (or (get t2 :narration) "")))))))
+
+(defspec pair-payee-narration-prop-test
+         100
+         (prop/for-all [[t1 t2] (gen-txn/pairable-txns-gen)]
+                       (let [p (sut/pair t1 t2)
+                             common-keys [:dct :date :accid :acc :acc2 :payee
+                                          :narration :units :cur]]
+                         (let [payee2 (:payee t2)
+                               narration2 (:narration t2)]
+                           (and (or (nil? payee2) (= (:payee2 p) payee2))
+                                (or (nil? narration2)
+                                    (= (:narration2 p) narration2)))))))
+
+(defspec pair-correlated-prop-test
+         20
+         (prop/for-all
+           [[t1 t2] (gen-txn/pairable-txns-gen)]
+           (let [p (sut/pair t1 t2)
+                 common-keys [:dct :date :accid :acc :acc2 :payee :narration
+                              :units :cur]]
+             (and (= (select-keys p common-keys) (select-keys t1 common-keys))
+                  (= (get-in p [:provenance :correlation-ids])
+                     [(:correlation-id t1) (:correlation-id t2)])))))
 
 (deftest try-pair-test
   (testing "try-pair nil"
@@ -89,7 +125,7 @@
         (is (= result txns)))))
   (testing "try-pair pairable"
     (let [t0 (gen/generate (gen-txn/qualified-txn-gen 0 3))
-          [t1 t2] (gen/generate (gen-txn/pairable-txns-gen 0))
+          [t1 t2] (gen/generate (gen-txn/pairable-txns-gen))
           txns [t0 t1]]
       (let [[[r0 rp] paired?] (sut/try-pair txns t2)]
         (is paired?)
@@ -117,7 +153,7 @@
         (is (= result {(:date t0) [t0], (:date t1) [t1 t2]})))))
   (testing "merge-pairable-txns! pairable"
     (let [t0 (gen/generate (gen-txn/qualified-txn-gen 0 3))
-          [t1 t2] (gen/generate (gen-txn/pairable-txns-gen 0))
+          [t1 t2] (gen/generate (gen-txn/pairable-txns-gen))
           tm (transient {(:date t0) [t0], (:date t1) [t1]})]
       (let [result (merge-pairable-txns 0 tm t2)]
         (is (= (get result (:date t0)) [t0]))
