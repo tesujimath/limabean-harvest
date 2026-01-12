@@ -37,7 +37,8 @@
     (eduction (comp (logging/wrap (correlation/xf)
                                   {:id ::ingested-txn, :data {:hdr hdr}})
                     (logging/wrap (realize/bal-xf realizer hdr)
-                                  {:id ::realized-txn}))
+                                  {:id ::realized-txn})
+                    (digest/resolve-accid-xf digest))
               txns)))
 
 (defn txns-and-bal-from-prepared-xf
