@@ -10,14 +10,15 @@
    :opts [{:as "Beancount file path for import context",
            :option "context",
            :type :string,
-           :env "LIMABEAN_BEANPATH"}
+           :env "LIMABEAN_BEANFILE"}
           {:as "Import config path",
            :option "config",
            :type :string,
-           :env "LIMABEAN_HARVEST_CONFIG"}],
-   :runs (fn [{maybe-config-path :config,
-               maybe-beanpath :context,
-               import-paths :_arguments}]
-           (app/run maybe-config-path maybe-beanpath import-paths))})
+           :env "LIMABEAN_HARVEST_CONFIG"}
+          {:as
+             "Generate include directive so import file may be used standalone",
+           :option "standalone",
+           :type :with-flag}],
+   :runs (fn [args] (app/run (:_arguments args) (dissoc args :_arguments)))})
 
 (defn -main [& args] (cli-matic/run-cmd args CLI))

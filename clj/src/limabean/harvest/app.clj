@@ -66,14 +66,19 @@
 
 (defn run
   "limabean-harvest entry point after CLI argument processing"
-  [maybe-config-path maybe-beanpath import-paths]
+  [import-paths opts]
   (logging/initialize)
-  (f/attempt-all [config (if maybe-config-path
-                           (config/read-from-file maybe-config-path)
-                           DEFAULT-CONFIG)
-                  digest (if maybe-beanpath
-                           (beanfile/digest maybe-beanpath)
-                           beanfile/EMPTY-DIGEST)
-                  harvested (harvest-txns config digest import-paths)]
-    (run! println (eduction (format/xf) harvested))
-    (f/when-failed [e] (do (println (f/message e) *err*) (System/exit 1)))))
+  (let [config-path (:config opts)
+        beanfile (:context opts)
+        standalone (:standalone opts)]
+    (f/attempt-all [config (if config-path
+                             (config/read-from-file config-path)
+                             DEFAULT-CONFIG)
+                    digest (if beanfile
+                             (beanfile/digest beanfile)
+                             beanfile/EMPTY-DIGEST)
+                    harvested (harvest-txns config digest import-paths)]
+      (do (if (and standalone beanfile)
+            (println (format "include \"%s\"\n" beanfile)))
+          (run! println (eduction (format/xf) harvested)))
+      (f/when-failed [e] (do (println (f/message e) *err*) (System/exit 1))))))
