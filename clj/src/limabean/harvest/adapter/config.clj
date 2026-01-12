@@ -12,22 +12,27 @@
     (require ns)
     (ns-resolve ns (symbol sym-name))))
 
-(defn fn-resolver
-  "Return a function resolver for maps with the given (optional) key."
-  [k]
-  (fn [m]
-    (if-let [f (get m k)]
-      (assoc m
-        k (or (resolve-qualified-symbol f)
-              ;; TODO use f/fail instead of throw
-              (throw (Exception. (format "failed to resolve %s" f)))))
-      m)))
+(defn resolve-qualified-symbols
+  "Resolve qualified symbols for maps with the given (optional) key,
+  whose value is a vector of symbols which must all resolve, otherwise failure."
+  [m k]
+  (if-let [fns (get m k)]
+    (assoc m
+      k (mapv #(or (resolve-qualified-symbol %)
+                   ;; TODO use f/fail instead of throw
+                   (throw (Exception. (format "failed to resolve %s" %))))
+          fns))
+    m))
 
-(defn resolve-fn-symbols
+(defn resolve-fns-symbols
   [cfg]
   (-> cfg
-      (update :classifiers #(mapv (fn-resolver :hdr-fn) %))
-      (update :realizers #(mapv (fn-resolver :txn-fn) %))))
+      (update :realizers
+              (fn [realizers]
+                (mapv #(-> %
+                           (resolve-qualified-symbols :txn-fns)
+                           (resolve-qualified-symbols :bal-fns))
+                  realizers)))))
 
 (defn read-from-file
   "Read harvest config from EDN file, and resolve any function symbols"
@@ -40,5 +45,5 @@
                                      raw-config
                                      (format "Failed reading config from %s"
                                              config-path))
-                  resolved-config (resolve-fn-symbols raw-config)]
+                  resolved-config (resolve-fns-symbols raw-config)]
     resolved-config))

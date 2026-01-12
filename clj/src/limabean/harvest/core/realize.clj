@@ -21,28 +21,30 @@
         ;; TODO validate this ahead of time so we can't fail here
         :else (throw (Exception. (str "bad realizer val " r)))))
 
+(defn thread-fns "Thread x through fns" [x fns] (reduce (fn [v f] (f v)) x fns))
+
 (defn realize-txn
-  "Realize the transaction, and if txn-fn is defined, apply that after the event."
-  [realizer txn-fn hdr txn]
+  "Realize the transaction, threading the realized value through the txn-fns, if any."
+  [realizer txn-fns hdr txn]
   (-> (into {}
             (map (fn [[k v]] [k (realize-field hdr txn (get realizer k))])
               realizer))
-      (#(if txn-fn (txn-fn %) %))
+      (thread-fns (or txn-fns []))
       (correlation/with-id-from txn)
       (assoc :dct :txn)))
 
 (defn txn-xf
   "Transducer to realize transactions"
   [realizer hdr]
-  (map (fn [txn] (realize-txn (:txn realizer) (:txn-fn realizer) hdr txn))))
+  (map (fn [txn] (realize-txn (:txn realizer) (:txn-fns realizer) hdr txn))))
 
 (defn realize-bal
   "Realize the balance, and if bal-fn is defined, apply that after the event."
-  [realizer bal-fn hdr txn]
+  [realizer bal-fns hdr txn]
   (-> (into {}
             (map (fn [[k v]] [k (realize-field hdr txn (get realizer k))])
               realizer))
-      (#(if bal-fn (bal-fn %) %))
+      (thread-fns (or bal-fns []))
       (correlation/with-id-from txn)
       (assoc :dct :bal)))
 
@@ -65,7 +67,7 @@
         ;; step
         ([result txn]
          (let [prev-bal @state
-               txn-bal (realize-bal (:bal realizer) (:bal-fn realizer) hdr txn)
+               txn-bal (realize-bal (:bal realizer) (:bal-fns realizer) hdr txn)
                latest-bal (if (and prev-bal txn-bal)
                             (max-by-date txn-bal prev-bal)
                             txn-bal)]

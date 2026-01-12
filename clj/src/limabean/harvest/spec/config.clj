@@ -10,10 +10,9 @@
 (s/def ::path-glob string?)
 (s/def ::classifier-selector (s/keys :req-un [::path-glob]))
 (s/def ::hdr (s/map-of keyword? string?))
-(s/def ::hdr-fn symbol?)
 
 (s/def ::classifier
-  (s/keys :req-un [::name ::selector ::ingester] :opt-un [::hdr ::hdr-fn]))
+  (s/keys :req-un [::name ::selector ::ingester] :opt-un [::hdr]))
 
 
 
@@ -36,11 +35,13 @@
 (s/def ::name string?)
 (s/def ::selector (s/map-of keyword? string?))
 (s/def ::bal ::field-map)
+(s/def ::bal-fns (s/coll-of symbol? :kind vector?))
 (s/def ::txn ::field-map)
-(s/def ::txn-fn symbol?)
+(s/def ::txn-fns (s/coll-of symbol? :kind vector?))
 
 (s/def ::realizer
-  (s/keys :req-un [::name ::selector ::txn] :opt-un [::bal ::txn-fn]))
+  (s/keys :req-un [::name ::selector ::txn]
+          :opt-un [::bal ::bal-fns ::txn-fns]))
 
 
 (s/def ::window int?)
