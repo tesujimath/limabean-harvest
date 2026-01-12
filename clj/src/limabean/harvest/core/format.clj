@@ -62,9 +62,12 @@
 (defn transaction
   "format a transaction"
   [txn]
-  (format "%tF txn%s\n%s%s%s%s%s%s"
+  (format "%tF txn%s\n%s%s%s%s%s%s%s"
           (:date txn)
           (payee-narration " " txn)
+          (if-let [comment (:comment txn)]
+            (format "%s; %s\n" INDENT comment)
+            "")
           (if-let [txnid (:txnid txn)]
             (format "%s%s: \"%s\"\n" INDENT TXNID_KEY txnid)
             "")
