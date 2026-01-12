@@ -11,6 +11,7 @@
 (def TXNID_KEY "txnid")
 (def TXNID2_KEY "txnid2")
 (def PAYEE2_KEY "payee2")
+(def NARRATION2_KEY "narration2")
 
 (defn escape-string [s] (str/escape s {\" "\\\"", \\ "\\\\"}))
 
@@ -61,7 +62,7 @@
 (defn transaction
   "format a transaction"
   [txn]
-  (format "%tF txn%s\n%s%s%s%s%s"
+  (format "%tF txn%s\n%s%s%s%s%s%s"
           (:date txn)
           (payee-narration " " txn)
           (if-let [txnid (:txnid txn)]
@@ -72,6 +73,9 @@
             "")
           (if-let [payee2 (:payee2 txn)]
             (format "%s%s: \"%s\"\n" INDENT PAYEE2_KEY payee2)
+            "")
+          (if-let [narration2 (:narration2 txn)]
+            (format "%s%s: \"%s\"\n" INDENT NARRATION2_KEY narration2)
             "")
           (format-acc-amount INDENT (:acc txn) (:units txn) (:cur txn))
           (str/join (map post-acc2 (:acc2 txn)))))
