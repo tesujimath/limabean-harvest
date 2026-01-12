@@ -75,3 +75,7 @@
             "")
           (post-acc (:acc txn) (:units txn) (:cur txn))
           (str/join (map post-acc2 (:acc2 txn)))))
+
+(defn directive "Format a directive" [d] (case (:dct d) :txn (transaction d)))
+
+(defn xf "Formatting transducer" [] (map directive))
