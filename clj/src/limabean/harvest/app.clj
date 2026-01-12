@@ -22,7 +22,7 @@
   (let [{:keys [hdr txns realizer]} prepared]
     (eduction (comp (logging/wrap (correlation/xf)
                                   {:id ::ingested-txn, :data {:hdr hdr}})
-                    (logging/wrap (realize/xf realizer hdr)
+                    (logging/wrap (realize/txn-xf realizer hdr)
                                   {:id ::realized-txn})
                     (digest/resolve-accid-xf digest)
                     (digest/dedupe-xf digest)
@@ -30,10 +30,23 @@
                                   {:id ::resolved-txn}))
               txns)))
 
-(defn txns-from-prepared-xf
-  "Return a transducer to harvest txns from a single prepared import file"
+(defn bal-from-prepared-ef
+  "Eduction to harvest balance, if any, from a single prepared import file"
+  [digest prepared]
+  (let [{:keys [hdr txns realizer]} prepared]
+    (eduction (comp (logging/wrap (correlation/xf)
+                                  {:id ::ingested-txn, :data {:hdr hdr}})
+                    (logging/wrap (realize/bal-xf realizer hdr)
+                                  {:id ::realized-txn}))
+              txns)))
+
+(defn txns-and-bal-from-prepared-xf
+  "Return a transducer to harvest txns and balance from a single prepared import file"
   [config digest]
-  (xf/mapcat-or-fail #(txns-from-prepared-ef digest %)))
+  (xf/mapcat-or-fail (fn [prepared]
+                       (eduction (xf/cat-or-fail)
+                                 [(txns-from-prepared-ef digest prepared)
+                                  (bal-from-prepared-ef digest prepared)]))))
 
 (defn harvest-txns
   "Eduction to harvest transaction from import paths"
@@ -44,7 +57,7 @@
                              sort/append-to-txns!)]
     (eduction (comp (prepare/xf config digest)
                     ;; prepared stream
-                    (txns-from-prepared-xf config digest)
+                    (txns-and-bal-from-prepared-xf config digest)
                     ;; txn stream
                     (logging/wrap (sort/by-date-xf date-insertion-fn!)
                                   {:id ::ordered-txn}))

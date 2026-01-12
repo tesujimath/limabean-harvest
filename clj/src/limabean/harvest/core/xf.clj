@@ -12,3 +12,5 @@
        (reduce (fn [result y] (if (f/failed? y) (reduced y) (rf result y)))
          result
          (f x))))))
+
+(defn cat-or-fail [] (mapcat-or-fail identity))

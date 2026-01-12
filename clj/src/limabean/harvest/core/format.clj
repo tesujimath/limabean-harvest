@@ -30,15 +30,15 @@
   [d]
   (let [s (str d) dp (or (str/index-of s ".") (count s))] [s (dec dp)]))
 
-(defn post-acc
-  "Format a post for the primary acc, with unit digit of units at UNIT-COLUMN"
-  [acc units cur]
-  (let [indent-acc (format "%s%s" INDENT (or acc UNKNOWN_ACC))
-        width (count indent-acc)
+(defn format-acc-amount
+  "Format account and amount, with unit digit of units at UNIT-COLUMN"
+  [prefix acc units cur]
+  (let [prefixed-acc (format "%s%s" prefix (or acc UNKNOWN_ACC))
+        width (count prefixed-acc)
         [u-str u-anchor] (decimal->anchored-string units)
         n-pad (max 1 (- UNIT-COLUMN (+ width u-anchor 1)))
         pad (apply str (repeat n-pad " "))]
-    (format "%s%s%s %s\n" indent-acc pad u-str cur)))
+    (format "%s%s%s %s\n" prefixed-acc pad u-str cur)))
 
 (defn post-acc2
   "Format a post for a secondary acc, with comment if any at COMMENT-COLUMN"
@@ -73,9 +73,22 @@
           (if-let [payee2 (:payee2 txn)]
             (format "%s%s: \"%s\"\n" INDENT PAYEE2_KEY payee2)
             "")
-          (post-acc (:acc txn) (:units txn) (:cur txn))
+          (format-acc-amount INDENT (:acc txn) (:units txn) (:cur txn))
           (str/join (map post-acc2 (:acc2 txn)))))
 
-(defn directive "Format a directive" [d] (case (:dct d) :txn (transaction d)))
+(defn balance
+  "Format a balance"
+  [bal]
+  (format-acc-amount (format "%tF balance " (:date bal))
+                     (:acc bal)
+                     (:units bal)
+                     (:cur bal)))
+
+(defn directive
+  "Format a directive"
+  [d]
+  (case (:dct d)
+    :txn (transaction d)
+    :bal (balance d)))
 
 (defn xf "Formatting transducer" [] (map directive))
