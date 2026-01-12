@@ -32,17 +32,27 @@
   (let [accids (or (and digest (:accids digest)) {})
         matching (filterv #(str/includes? path %) (keys accids))]
     (case (count matching)
-      0 (f/fail "infer-from-path failed - no accid matches %s" path)
-      1 (assoc hdr :inferred-accid (first matching))
-      (f/fail "multiple accids match %s: " path (str/join " " matching)))))
+      0 (do (tel/log! {:id ::infer-accid-from-path,
+                       :msg (format
+                              "infer-from-path failed - no accid matches %s"
+                              path)})
+            hdr)
+      1 (let [matched (first matching)]
+          (tel/log!
+            {:id ::infer-accid-from-path,
+             :msg (format "infer-from-path for %s matched %s" path matched)})
+          (assoc hdr :inferred-accid matched))
+      (do (tel/log!
+            {:id ::infer-accid-from-path,
+             :msg (format "infer-from-path for %s ignoring multiple matches %s"
+                          path
+                          matching)})
+          hdr))))
 
 (defn infer-header-fields
   "Augment the header of a classified import with any inferred fields."
   [classified digest]
-  (let [hdr-fn (:hdr-fn classified)]
-    (if hdr-fn
-      (update classified :hdr infer-accid-from-path digest (:path classified))
-      classified)))
+  (update classified :hdr infer-accid-from-path digest (:path classified)))
 
 (defn substitute
   "Substitute k for v among items"
@@ -83,6 +93,7 @@
   (f/attempt-all [classified (classify import-path config)
                   _ (tel/log! {:id ::classify, :data classified})
                   inferred (infer-header-fields classified digest)
+                  _ (tel/log! {:id ::infer-hdr, :data inferred})
                   ingested (ingest inferred)
                   realizer (get-realizer ingested config)
                   _ (tel/log! {:id ::get-realizer, :data realizer})]

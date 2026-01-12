@@ -1,7 +1,8 @@
 (ns limabean.harvest.api.contrib.first-direct
   (:require [clojure.string :as str]))
 
-;; functions in the api namespace are referenced from config files, so stability
+;; functions in the api namespace are referenced from config files, so
+;; stability
 ;; is important
 
 (defn payee-narration
@@ -11,8 +12,8 @@
   so we attempt to split on two or more spaces, and if we can't just take it as narration.
   "
   [txn]
-  (if-let [description (get txn :description)]
+  (if-let [description (:description txn)]
     (let [txn (dissoc txn :description)
           [s1 s2] (str/split description #"   *" 2)]
-      (if s2 (merge txn {:payee s1, :narration s2}) (assoc txn :narration s1)))
+      (if s2 (merge txn {:payee s1, :narration s2}) (assoc txn :payee s1)))
     txn))

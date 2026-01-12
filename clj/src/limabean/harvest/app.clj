@@ -35,9 +35,9 @@
   [digest prepared]
   (let [{:keys [hdr txns realizer]} prepared]
     (eduction (comp (logging/wrap (correlation/xf)
-                                  {:id ::ingested-txn, :data {:hdr hdr}})
+                                  {:id ::ingested-bal, :data {:hdr hdr}})
                     (logging/wrap (realize/bal-xf realizer hdr)
-                                  {:id ::realized-txn})
+                                  {:id ::realized-bal})
                     (digest/resolve-accid-xf digest))
               txns)))
 
