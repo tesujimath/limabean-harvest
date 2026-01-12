@@ -1,5 +1,6 @@
 (ns limabean.harvest.core.pairing
   (:require [java-time.api :as jt]
+            [limabean.harvest.core.correlation :as correlation]
             [limabean.harvest.core.transient :refer [update!]]))
 
 (defn unique-match?
@@ -31,26 +32,17 @@
               (unique-match? a0 s1)
               (unique-match? a1 s0)))))
 
-
 (defn pair
-  "Pair two transactions by returning the first with txnid2 from the second's
-  txnid (if any), otherwise a comment
-  also with payee and narration from the second as additional fields
-  "
-  [txn0 txn2]
-  (let [txnid2 (:txnid txn2)
-        payee2 (:payee txn2)
-        narration2 (:narration txn2)
-        with-txnid (if txnid2
-                     (assoc txn0 :txnid2 txnid2)
-                     (let [comment (format "paired with \"%s\" \"%s\""
-                                           (or (:payee txn2) "")
-                                           (or (:narration txn2) ""))]
-                       (assoc txn0 :comment comment)))
-        with-payee (if payee2 (assoc with-txnid :payee2 payee2) with-txnid)
-        with-narration
-          (if narration2 (assoc with-payee :narration2 narration2) with-payee)]
-    with-narration))
+  [txn0 txn]
+  (let [{:keys [txnid payee narration]} txn]
+    (cond-> txn0
+      txnid (assoc :txnid2 txnid)
+      (not txnid)
+        (assoc :comment
+          (format "paired with \"%s\" \"%s\"" (or payee "") (or narration "")))
+      payee (assoc :payee2 payee)
+      narration (assoc :narration2 narration)
+      true (correlation/new-with-provenance [txn0 txn]))))
 
 (defn try-pair
   "Try to pair txn2 into txns, returning [txns-with-paired true] or [txns false]

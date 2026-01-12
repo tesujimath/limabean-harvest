@@ -1,13 +1,29 @@
 (ns limabean.harvest.core.correlation)
 
+(defn with-id
+  "Add a new correlation-id to x"
+  [x]
+  (merge x {:correlation-id (random-uuid)}))
+
 (defn with-id-from
   "Return target with a correlation-id from source"
-  [target source]
+  [x source]
   (if-let [id (:correlation-id source)]
-    (assoc target :correlation-id id)
-    target))
+    (assoc x :correlation-id id)
+    x))
 
-(defn xf
-  "Return a transducer to add a correlation-id"
-  []
-  (map (fn [x] (merge x {:correlation-id (random-uuid)}))))
+(defn with-provenance
+  "Merge correlation-ids from sources with any existing  provenance"
+  [x sources]
+  (let [existing-provenence (get-in x [:provenance :correlation-ids])
+        source-ids (mapv :correlation-id sources)]
+    (update-in x [:provenance :correlation-ids] #(into source-ids %))))
+
+(defn new-with-provenance
+  "Return target with a new correlation-id and provenance from sources"
+  [x sources]
+  (-> x
+      (with-provenance sources)
+      (with-id)))
+
+(defn xf "Return a transducer to add a correlation-id" [] (map with-id))
