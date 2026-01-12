@@ -1,7 +1,7 @@
 (ns limabean.harvest.adapter.config
   (:require [clojure.edn :as edn]
             [clojure.string :as str]
-            [limabean.harvest.core.spec-support :refer [conform-or-fail]]
+            [limabean.harvest.spec :refer [conform-or-fail]]
             [limabean.harvest.spec.config :as spec]
             [failjure.core :as f]))
 

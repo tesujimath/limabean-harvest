@@ -1,4 +1,4 @@
-(ns limabean.harvest.core.spec-support
+(ns limabean.harvest.spec
   (:require [clojure.spec.alpha :as s]
             [expound.alpha :as expound]
             [failjure.core :as f]))
