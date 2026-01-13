@@ -1,9 +1,10 @@
 (ns limabean.harvest.adapter.config
   (:require [clojure.edn :as edn]
+            [clojure.spec.alpha :as s]
             [clojure.string :as str]
-            [limabean.harvest.spec :refer [conform-or-fail]]
+            [expound.alpha :as expound]
             [limabean.harvest.spec.config :as spec]
-            [failjure.core :as f]))
+            [limabean.harvest.core.error :as error]))
 
 (defn resolve-qualified-symbol
   [sym]
@@ -15,35 +16,44 @@
 (defn resolve-qualified-symbols
   "Resolve qualified symbols for maps with the given (optional) key,
   whose value is a vector of symbols which must all resolve, otherwise failure."
-  [m k]
+  [m k ctx]
   (if-let [fns (get m k)]
     (assoc m
       k (mapv #(or (resolve-qualified-symbol %)
-                   ;; TODO use f/fail instead of throw
-                   (throw (Exception. (format "failed to resolve %s" %))))
+                   (throw (ex-info (format "Unknown symbol %s" %)
+                                   (merge ctx
+                                          {:type
+                                             :limabean.harvest/error-config}))))
           fns))
     m))
 
-(defn resolve-fns-symbols
+(defn resolve-fns
   [cfg]
-  (-> cfg
-      (update :realizers
-              (fn [realizers]
-                (mapv #(-> %
-                           (resolve-qualified-symbols :txn-fns)
-                           (resolve-qualified-symbols :bal-fns))
-                  realizers)))))
+  (let [ctx {:config-path (:path cfg)}]
+    (-> cfg
+        (update :realizers
+                (fn [realizers]
+                  (mapv #(-> %
+                             (resolve-qualified-symbols :txn-fns ctx)
+                             (resolve-qualified-symbols :bal-fns ctx))
+                    realizers))))))
 
 (defn read-from-file
   "Read harvest config from EDN file, and resolve any function symbols"
   [config-path]
-  (f/attempt-all [raw-string (slurp config-path)
-                  raw-config (assoc (edn/read-string raw-string)
-                               :path config-path)
-                  validated-config (conform-or-fail
-                                     ::spec/raw-config
-                                     raw-config
-                                     (format "Failed reading config from %s"
-                                             config-path))
-                  resolved-config (resolve-fns-symbols raw-config)]
-    resolved-config))
+  (let [raw-string (error/slurp-or-throw
+                     config-path
+                     (ex-info "Can't read file"
+                              {:type :limabean.harvest/error-config,
+                               :config-path config-path}))
+        raw-config (edn/read-string raw-string)]
+    (if (s/valid? ::spec/raw-config raw-config)
+      (-> raw-config
+          (assoc :path config-path)
+          (resolve-fns))
+      (throw (ex-info "invalid config"
+                      {:type :limabean.harvest/error-config,
+                       :config-path config-path,
+                       :details (with-out-str (expound/expound
+                                                ::spec/raw-config
+                                                raw-config))})))))

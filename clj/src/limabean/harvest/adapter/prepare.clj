@@ -2,7 +2,6 @@
   (:require [cheshire.core :as cheshire]
             [clojure.java.shell :as shell]
             [clojure.string :as str]
-            [failjure.core :as f]
             [limabean.harvest.core.glob :as glob]
             [taoensso.telemere :as tel]))
 
@@ -21,10 +20,13 @@
   [import-path config]
   (if-let [classifiers (:classifiers config)]
     (or (some #(select-by-path % import-path) classifiers)
-        (f/fail "failed to classify %s matching path-globs in %s"
-                import-path
-                (:path config)))
-    (f/fail "no classifiers specified in %s" (:path config))))
+        (throw (ex-info "Failed to classify import by path-glob"
+                        {:type :limabean.harvest/error-import-path,
+                         :import-path import-path,
+                         :config-path (:path config)})))
+    (throw (ex-info "No classifiers found"
+                    {:type :limabean.harvest/error-config,
+                     :config-path (:path config)}))))
 
 (defn infer-accid-from-path
   "Infer the accid from the path of the import file, by matching against accids in the digest"
@@ -70,7 +72,10 @@
           (cheshire/parse-string true)
           (assoc :meta (:meta classified))
           (update :hdr #(merge % (:hdr classified))))
-      (f/fail "%s failed: %s" (str/join " " cmd) (:err ingested)))))
+      (throw (ex-info (format "Failed to ingest %s" path)
+                      {:type :limabean.harvest/error-external-command,
+                       :command cmd,
+                       :details (:err ingested)})))))
 
 (defn get-realizer
   "Find the first realizer whose selector matches the ingested header"
@@ -81,34 +86,30 @@
                             (and (= sel (select-keys hdr (keys sel))) %))
                          realizers)]
       (or realizer
-          (f/fail "failed to find realizer for ingested %s with hdr %s in %s"
-                  (:meta ingested)
-                  (str hdr)
-                  (:path config))))
-    (f/fail "no realizers specified in %s" (:path config))))
+          (throw (ex-info "Failed to find realizer"
+                          {:type :limabean.harvest/error-unmatched-realizer,
+                           :hdr hdr,
+                           :import-path (get-in ingested [:meta :path]),
+                           :config-path (:path config)}))))
+    (throw (ex-info "No realizers"
+                    {:type :limabean.harvest/error-config,
+                     :config-path (:path config)}))))
 
 (defn prepare
   "Classify, infer header fields, and ingest a single import file, and resolve its realizer"
   [import-path config digest]
-  (f/attempt-all [classified (classify import-path config)
-                  _ (tel/log! {:id ::classify, :data classified})
-                  inferred (infer-header-fields classified digest)
-                  _ (tel/log! {:id ::infer-hdr, :data inferred})
-                  ingested (ingest inferred)
-                  realizer (get-realizer ingested config)
-                  _ (tel/log! {:id ::get-realizer, :data realizer})]
+  (let [classified (classify import-path config)
+        _ (tel/log! {:id ::classify, :data classified})
+        inferred (infer-header-fields classified digest)
+        _ (tel/log! {:id ::infer-hdr, :data inferred})
+        ingested (ingest inferred)
+        realizer (get-realizer ingested config)
+        _ (tel/log! {:id ::get-realizer, :data realizer})]
     (merge ingested
            {:meta (merge (:meta ingested) {:realizer (:name realizer)}),
             :realizer realizer})))
 
 (defn xf
-  "Transducer to prepare import files, with fast fail."
+  "Transducer to prepare import files."
   [config digest]
-  (fn [rf]
-    (fn
-      ([] (rf))
-      ([result] (rf result))
-      ([result x]
-       (let [prepared (prepare x config digest)]
-         ;; fast fail
-         (if (f/failed? prepared) (reduced prepared) (rf result prepared)))))))
+  (map #(prepare % config digest)))

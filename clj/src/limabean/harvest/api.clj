@@ -1,6 +1,5 @@
 (ns limabean.harvest.api
   (:require [clojure.string :as str]
-            [failjure.core :as f]
             [java-time.api :as jt]))
 
 ;; functions which may be referenced from config, for which stability is

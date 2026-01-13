@@ -1,6 +1,5 @@
 (ns limabean.harvest.app
   (:require [cli-matic.core :as cli-matic]
-            [failjure.core :as f]
             [limabean.harvest.adapter.beanfile :as beanfile]
             [limabean.harvest.adapter.config :as config]
             [limabean.harvest.adapter.logging :as logging]
@@ -8,21 +7,21 @@
             [limabean.harvest.core.config :refer [DEFAULT-CONFIG]]
             [limabean.harvest.core.correlation :as correlation]
             [limabean.harvest.core.digest :as digest]
+            [limabean.harvest.core.error :as error]
             [limabean.harvest.core.format :as format]
             [limabean.harvest.core.pairing :as pairing]
             [limabean.harvest.core.realize :as realize]
             [limabean.harvest.core.sort :as sort]
-            [limabean.harvest.core.xf :as xf]
             [taoensso.telemere :as tel]))
 
 
 (defn txns-from-prepared-ef
   "Eduction to harvest txns from a single prepared import file"
-  [digest prepared]
+  [digest prepared ctx]
   (let [{:keys [hdr txns realizer]} prepared]
     (eduction (comp (logging/wrap (correlation/xf)
                                   {:id ::ingested-txn, :data {:hdr hdr}})
-                    (logging/wrap (realize/txn-xf realizer hdr)
+                    (logging/wrap (realize/txn-xf realizer hdr ctx)
                                   {:id ::realized-txn})
                     (digest/resolve-accid-xf digest)
                     (digest/dedupe-xf digest)
@@ -32,22 +31,22 @@
 
 (defn bal-from-prepared-ef
   "Eduction to harvest balance, if any, from a single prepared import file"
-  [digest prepared]
+  [digest prepared ctx]
   (let [{:keys [hdr txns realizer]} prepared]
     (eduction (comp (logging/wrap (correlation/xf)
                                   {:id ::ingested-bal, :data {:hdr hdr}})
-                    (logging/wrap (realize/bal-xf realizer hdr)
+                    (logging/wrap (realize/bal-xf realizer hdr ctx)
                                   {:id ::realized-bal})
                     (digest/resolve-accid-xf digest))
               txns)))
 
 (defn txns-and-bal-from-prepared-xf
   "Return a transducer to harvest txns and balance from a single prepared import file"
-  [config digest]
-  (xf/mapcat-or-fail (fn [prepared]
-                       (eduction (xf/cat-or-fail)
-                                 [(txns-from-prepared-ef digest prepared)
-                                  (bal-from-prepared-ef digest prepared)]))))
+  [config digest ctx]
+  (mapcat (fn [prepared]
+            (eduction cat
+                      [(txns-from-prepared-ef digest prepared ctx)
+                       (bal-from-prepared-ef digest prepared ctx)]))))
 
 (defn harvest-txns
   "Eduction to harvest transaction from import paths"
@@ -58,7 +57,10 @@
                              sort/append-to-txns!)]
     (eduction (comp (prepare/xf config digest)
                     ;; prepared stream
-                    (txns-and-bal-from-prepared-xf config digest)
+                    (txns-and-bal-from-prepared-xf config
+                                                   digest
+                                                   {:config-path (:path
+                                                                   config)})
                     ;; txn stream
                     (logging/wrap (sort/by-date-xf date-insertion-fn!)
                                   {:id ::ordered-txn}))
@@ -67,18 +69,19 @@
 (defn run
   "limabean-harvest entry point after CLI argument processing"
   [import-paths opts]
-  (logging/initialize)
-  (let [config-path (:config opts)
-        beanfile (:context opts)
-        standalone (:standalone opts)]
-    (f/attempt-all [config (if config-path
-                             (config/read-from-file config-path)
-                             DEFAULT-CONFIG)
-                    digest (if beanfile
-                             (beanfile/digest beanfile)
-                             beanfile/EMPTY-DIGEST)
-                    harvested (harvest-txns config digest import-paths)]
+  (try
+    (logging/initialize)
+    (let [config-path (:config opts)
+          beanfile (:context opts)
+          standalone (:standalone opts)
+          config
+            (if config-path (config/read-from-file config-path) DEFAULT-CONFIG)
+          digest (if beanfile (beanfile/digest beanfile) beanfile/EMPTY-DIGEST)
+          harvested (harvest-txns config digest import-paths)]
       (do (if (and standalone beanfile)
             (println (format "include \"%s\"\n" beanfile)))
-          (run! println (eduction (format/xf) harvested)))
-      (f/when-failed [e] (do (println (f/message e) *err*) (System/exit 1))))))
+          (run! println (eduction (format/xf) harvested))))
+    (catch clojure.lang.ExceptionInfo e
+      (binding [*out* *err*]
+        (println (error/format-user e))
+        (System/exit 1)))))

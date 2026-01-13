@@ -1,5 +1,5 @@
 use clap::Parser;
-use color_eyre::eyre::Result;
+use color_eyre::eyre::{Context, Result};
 use slugify::slugify;
 use std::{
     collections::HashMap,
@@ -23,7 +23,8 @@ fn main() -> Result<()> {
 }
 
 pub(crate) fn read_csv_file(path: &Path) -> Result<Hull> {
-    let csv_file = std::fs::File::open(path)?;
+    let csv_file = std::fs::File::open(path)
+        .wrap_err_with(|| format!("Failed to read {}", path.to_string_lossy()))?;
     let mut rdr = csv::Reader::from_reader(csv_file);
     let column_names = rdr
         .headers()?

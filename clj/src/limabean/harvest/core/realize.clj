@@ -1,11 +1,11 @@
 (ns limabean.harvest.core.realize
   (:require [clojure.string :as str]
-            [failjure.core :as f]
             [java-time.api :as jt]
             [limabean.harvest.core.correlation :as correlation]))
 
 (defn realize-field
-  [hdr txn r]
+  "Realize a field with the already-validated realizer"
+  [hdr txn r ctx]
   (cond (string? r) r
         (map? r) (let [{:keys [:fmt :key :src :type]} r]
                    (let [src (case src
@@ -17,17 +17,15 @@
                        :date (jt/local-date fmt v-raw)
                        :decimal (BigDecimal. v-raw)
                        nil v-raw)))
-        (vector? r) (str/join "" (map #(realize-field hdr txn %) r))
-        ;; TODO validate this ahead of time so we can't fail here
-        :else (throw (Exception. (str "bad realizer val " r)))))
+        (vector? r) (str/join "" (map #(realize-field hdr txn % ctx) r))))
 
 (defn thread-fns "Thread x through fns" [x fns] (reduce (fn [v f] (f v)) x fns))
 
 (defn realize-txn
   "Realize the transaction, threading the realized value through the txn-fns, if any."
-  [realizer txn-fns hdr txn]
+  [realizer txn-fns hdr txn ctx]
   (-> (into {}
-            (map (fn [[k v]] [k (realize-field hdr txn (get realizer k))])
+            (map (fn [[k v]] [k (realize-field hdr txn (get realizer k) ctx)])
               realizer))
       (thread-fns (or txn-fns []))
       (correlation/with-id-from txn)
@@ -35,14 +33,15 @@
 
 (defn txn-xf
   "Transducer to realize transactions"
-  [realizer hdr]
-  (map (fn [txn] (realize-txn (:txn realizer) (:txn-fns realizer) hdr txn))))
+  [realizer hdr ctx]
+  (map (fn [txn]
+         (realize-txn (:txn realizer) (:txn-fns realizer) hdr txn ctx))))
 
 (defn realize-bal
   "Realize the balance, and if bal-fn is defined, apply that after the event."
-  [realizer bal-fns hdr txn]
+  [realizer bal-fns hdr txn ctx]
   (-> (into {}
-            (map (fn [[k v]] [k (realize-field hdr txn (get realizer k))])
+            (map (fn [[k v]] [k (realize-field hdr txn (get realizer k) ctx)])
               realizer))
       (thread-fns (or bal-fns []))
       (correlation/with-id-from txn)
@@ -52,7 +51,7 @@
 
 (defn bal-xf
   "Transducer to realize just the most recent balance, if any"
-  [realizer hdr]
+  [realizer hdr ctx]
   (fn [rf]
     (let [state (volatile! nil)] ;; latest-bal, if any
       (fn
@@ -67,7 +66,8 @@
         ;; step
         ([result txn]
          (let [prev-bal @state
-               txn-bal (realize-bal (:bal realizer) (:bal-fns realizer) hdr txn)
+               txn-bal
+                 (realize-bal (:bal realizer) (:bal-fns realizer) hdr txn ctx)
                latest-bal (if (and prev-bal txn-bal)
                             (max-by-date txn-bal prev-bal)
                             txn-bal)]

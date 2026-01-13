@@ -1,5 +1,5 @@
 use clap::Parser;
-use color_eyre::eyre::{eyre, Result};
+use color_eyre::eyre::{eyre, Context, Result};
 use regex::Regex;
 use std::path::PathBuf;
 use std::{fs::read_to_string, path::Path};
@@ -21,7 +21,8 @@ fn main() -> Result<()> {
 }
 
 pub(crate) fn read_ofx_file(path: &Path) -> Result<Hull> {
-    let ofx_content = read_to_string(path)?;
+    let ofx_content = read_to_string(path)
+        .wrap_err_with(|| format!("Failed to read {}", path.to_string_lossy()))?;
     let first_line = ofx_content.lines().next();
     if let Some(first_line) = first_line {
         if first_line.trim() == "OFXHEADER:100" {

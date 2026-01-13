@@ -1,9 +1,8 @@
 (ns limabean.harvest.adapter.beanfile
   (:require [cheshire.core :as cheshire]
             [clojure.java.shell :as shell]
-            [failjure.core :as f]
-            [java-time.api :as jt]
-            [clojure.string :as str]))
+            [clojure.string :as str]
+            [java-time.api :as jt]))
 
 (def readers {'time/date #(jt/local-date %)})
 
@@ -21,4 +20,7 @@
             d1 (into {} (map (fn [[k v]] [(keyword k) v]) d0))]
         ;; JSON represents the set of txnids as a list, so fix that:
         (assoc d1 :txnids (set (:txnids d1))))
-      (f/fail "%s failed: %s" (str/join " " cmd) (digested :err)))))
+      (throw (ex-info (format "Failed to digest %s" beancount-path)
+                      {:type :limabean.harvest/error-external-command,
+                       :command cmd,
+                       :details (:err digested)})))))
