@@ -1,5 +1,3 @@
-include "firstdirect.beancount"
-
 2024-05-04 txn "GROSS INTEREST" "TO 03MAY2024"
   Assets:Bank:Uk:Current                                                   1.00 GBP
   Income:Unknown
@@ -53,7 +51,6 @@ include "firstdirect.beancount"
   Expenses:Unknown
 
 2025-02-10 txn "TRANSFER TO SAVINGS" ""
-  ; paired with "TRANSFER FROM CURRENT" ""
   payee2: "TRANSFER FROM CURRENT"
   Assets:Bank:Uk:Current                                                 -34.28 GBP
   Assets:Bank:Uk:Savings                ; inferred from 1 payee
