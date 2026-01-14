@@ -35,8 +35,9 @@
             rust-bin.stable.latest.default
             gcc
 
-              clojure
-              neil
+            clojure
+            neil
+            git
           ];
 
           limabean-harvest =
