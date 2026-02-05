@@ -1,8 +1,0 @@
-#!/usr/bin/env bash
-
-test -r "$LIMABEAN_HARVEST_JAR" || {
-    echo >&2 "limabean-harvest JAR not found, please define environment variable LIMABEAN_HARVEST_JAR"
-    exit 1
-}
-
-exec java -jar "$LIMABEAN_HARVEST_JAR" "$@"

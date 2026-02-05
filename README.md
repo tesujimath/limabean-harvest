@@ -87,7 +87,7 @@ Error: invalid balance
 
 ## Logging
 
-If the environment variable `LIMABEAN_HARVEST_LOGPATH` is defined, that will accumulate JSON format structured logging, best viewed with a JSON log viewer such as [hl](https://github.com/pamburus/hl).
+If the environment variable `LIMABEAN_HARVEST_LOG` is defined, that will accumulate JSON format structured logging, best viewed with a JSON log viewer such as [hl](https://github.com/pamburus/hl).
 
 
 ## Alternatives

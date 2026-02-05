@@ -1,6 +1,5 @@
 (ns limabean.harvest.app
-  (:require [cli-matic.core :as cli-matic]
-            [limabean.harvest.adapter.beanfile :as beanfile]
+  (:require [limabean.harvest.adapter.beanfile :as beanfile]
             [limabean.harvest.adapter.config :as config]
             [limabean.harvest.adapter.logging :as logging]
             [limabean.harvest.adapter.prepare :as prepare]
@@ -11,8 +10,7 @@
             [limabean.harvest.core.format :as format]
             [limabean.harvest.core.pairing :as pairing]
             [limabean.harvest.core.realize :as realize]
-            [limabean.harvest.core.sort :as sort]
-            [taoensso.telemere :as tel]))
+            [limabean.harvest.core.sort :as sort]))
 
 
 (defn txns-from-prepared-ef
@@ -42,7 +40,7 @@
 
 (defn txns-and-bal-from-prepared-xf
   "Return a transducer to harvest txns and balance from a single prepared import file"
-  [config digest ctx]
+  [digest ctx]
   (mapcat (fn [prepared]
             (eduction cat
                       [(txns-from-prepared-ef digest prepared ctx)
@@ -57,8 +55,7 @@
                              sort/append-to-txns!)]
     (eduction (comp (prepare/xf config digest)
                     ;; prepared stream
-                    (txns-and-bal-from-prepared-xf config
-                                                   digest
+                    (txns-and-bal-from-prepared-xf digest
                                                    {:config-path (:path
                                                                    config)})
                     ;; txn stream
@@ -78,9 +75,9 @@
             (if config-path (config/read-from-file config-path) DEFAULT-CONFIG)
           digest (if beanfile (beanfile/digest beanfile) beanfile/EMPTY-DIGEST)
           harvested (harvest-txns config digest import-paths)]
-      (do (if (and standalone beanfile)
-            (println (format "include \"%s\"\n" beanfile)))
-          (run! println (eduction (format/xf) harvested))))
+      (when (and standalone beanfile)
+        (println (format "include \"%s\"\n" beanfile)))
+      (run! println (eduction (format/xf) harvested)))
     (catch clojure.lang.ExceptionInfo e
       (binding [*out* *err*]
         (println (error/format-user e))
