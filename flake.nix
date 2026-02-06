@@ -8,6 +8,10 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     flake-utils.url = "github:numtide/flake-utils";
+    autobean-format = {
+      url = "github:SEIAROTg/autobean-format";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = inputs:
@@ -16,15 +20,20 @@
         let
           overlays = [ (import inputs.rust-overlay) ];
           pkgs = import inputs.nixpkgs {
+            inherit system;
+          };
+          pkgs-with-rust-overlay = import inputs.nixpkgs {
             inherit system overlays;
           };
+          flakePkgs = {
+            autobean-format = inputs.autobean-format.packages.${system}.default;
+          };
           # cargo-nightly based on https://github.com/oxalica/rust-overlay/issues/82
-          nightly = pkgs.rust-bin.selectLatestNightlyWith (t: t.default);
+          nightly = pkgs-with-rust-overlay.rust-bin.selectLatestNightlyWith (t: t.default);
           cargo-nightly = pkgs.writeShellScriptBin "cargo-nightly" ''
             export RUSTC="${nightly}/bin/rustc";
             exec "${nightly}/bin/cargo" "$@"
           '';
-
 
           ci-packages = with pkgs; [
             bashInteractive
@@ -32,7 +41,7 @@
             diffutils
             just
 
-            rust-bin.stable.latest.default
+            cargo
             gcc
 
             clojure
@@ -73,8 +82,10 @@
               cargo-edit
               gdb
 
-              clojure-lsp
-              jre
+              # useful tools:
+              beancount
+              beanquery
+              flakePkgs.autobean-format
             ] ++ ci-packages;
 
             shellHook = ''
@@ -92,7 +103,7 @@
             tests = {
               type = "app";
               program = "${writeShellScript "limabean-harvest-tests" ''
-                export PATH=${pkgs.lib.makeBinPath (ci-packages ++ [limabean-harvest])}
+                export PATH=${pkgs.lib.makeBinPath ci-packages}:$(pwd)/rust/target/debug
                 just test
               ''}";
             };

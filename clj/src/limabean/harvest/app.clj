@@ -15,36 +15,41 @@
 
 (defn txns-from-prepared-ef
   "Eduction to harvest txns from a single prepared import file"
-  [digest prepared ctx]
+  [config digest prepared]
   (let [{:keys [hdr txns realizer]} prepared]
-    (eduction (comp (logging/wrap (correlation/xf)
-                                  {:id ::ingested-txn, :data {:hdr hdr}})
-                    (logging/wrap (realize/txn-xf realizer hdr ctx)
-                                  {:id ::realized-txn})
-                    (digest/resolve-accid-xf digest)
-                    (digest/dedupe-xf digest)
-                    (logging/wrap (digest/infer-secondary-accounts-xf digest)
-                                  {:id ::resolved-txn}))
+    (eduction (comp
+                (logging/wrap (correlation/xf)
+                              {:id ::ingested-txn, :data {:hdr hdr}})
+                (logging/wrap
+                  (realize/txn-xf realizer hdr {:config-path (:path config)})
+                  {:id ::realized-txn})
+                (digest/resolve-accid-xf digest)
+                (digest/dedupe-xf digest)
+                (logging/wrap
+                  (digest/infer-secondary-accounts-xf (:format config) digest)
+                  {:id ::resolved-txn}))
               txns)))
 
 (defn bal-from-prepared-ef
   "Eduction to harvest balance, if any, from a single prepared import file"
-  [digest prepared ctx]
+  [config digest prepared]
   (let [{:keys [hdr txns realizer]} prepared]
     (eduction (comp (logging/wrap (correlation/xf)
                                   {:id ::ingested-bal, :data {:hdr hdr}})
-                    (logging/wrap (realize/bal-xf realizer hdr ctx)
+                    (logging/wrap (realize/bal-xf realizer
+                                                  hdr
+                                                  {:config-path (:path config)})
                                   {:id ::realized-bal})
                     (digest/resolve-accid-xf digest))
               txns)))
 
 (defn txns-and-bal-from-prepared-xf
   "Return a transducer to harvest txns and balance from a single prepared import file"
-  [digest ctx]
+  [config digest]
   (mapcat (fn [prepared]
             (eduction cat
-                      [(txns-from-prepared-ef digest prepared ctx)
-                       (bal-from-prepared-ef digest prepared ctx)]))))
+                      [(txns-from-prepared-ef config digest prepared)
+                       (bal-from-prepared-ef config digest prepared)]))))
 
 (defn harvest-txns
   "Eduction to harvest transaction from import paths"
@@ -55,9 +60,7 @@
                              sort/append-to-txns!)]
     (eduction (comp (prepare/xf config digest)
                     ;; prepared stream
-                    (txns-and-bal-from-prepared-xf digest
-                                                   {:config-path (:path
-                                                                   config)})
+                    (txns-and-bal-from-prepared-xf config digest)
                     ;; txn stream
                     (logging/wrap (sort/by-date-xf date-insertion-fn!)
                                   {:id ::ordered-txn}))
@@ -77,7 +80,7 @@
           harvested (harvest-txns config digest import-paths)]
       (when (and standalone beanfile)
         (println (format "include \"%s\"\n" beanfile)))
-      (run! println (eduction (format/xf) harvested)))
+      (run! println (eduction (format/xf (:format config)) harvested)))
     (catch clojure.lang.ExceptionInfo e
       (binding [*out* *err*]
         (println (error/format-user e))

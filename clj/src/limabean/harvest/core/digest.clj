@@ -1,5 +1,9 @@
 (ns limabean.harvest.core.digest)
 
+;; these may be set in config:
+(def DEFAULT-EXPENSES "Expenses:Unknown")
+(def DEFAULT-INCOME "Income:Unknown")
+
 (defn resolve-accid-xf
   "Return a transducer to augment with acc by resolving accid if any in the digest"
   [digest]
@@ -18,8 +22,11 @@
 
 (defn infer-secondary-accounts-xf
   "Return a transducer to infer secondary accounts from payees and narrations"
-  [digest]
-  (let [{:keys [payees narrations]} digest]
+  [config digest]
+  (let [{:keys [payees narrations]} digest
+        default-expenses
+          (get-in config [:default :acc :expenses] DEFAULT-EXPENSES)
+        default-income (get-in config [:default :acc :income] DEFAULT-INCOME)]
     (map
       (fn [txn]
         (let [units (or (:units txn) 0M)
@@ -52,7 +59,7 @@
                 (cond found-payee (order-accounts found-payee "payee")
                       found-narration (order-accounts found-narration
                                                       "narration")
-                      (> units 0) [{:name "Income:Unknown"}]
-                      (< units 0) [{:name "Expenses:Unknown"}]
+                      (> units 0) [{:name default-income}]
+                      (< units 0) [{:name default-expenses}]
                       :else [])]
           (assoc txn :acc2 secondary-accounts))))))
