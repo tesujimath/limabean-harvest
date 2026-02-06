@@ -13,10 +13,9 @@
     x))
 
 (defn with-provenance
-  "Merge correlation-ids from sources with any existing  provenance"
+  "Merge correlation-ids from sources with any existing provenance"
   [x sources]
-  (let [existing-provenence (get-in x [:provenance :correlation-ids])
-        source-ids (mapv :correlation-id sources)]
+  (let [source-ids (mapv :correlation-id sources)]
     (update-in x [:provenance :correlation-ids] #(into source-ids %))))
 
 (defn new-with-provenance

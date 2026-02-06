@@ -14,8 +14,7 @@
 (defn dedupe-xf
   "Return a transducer to dedupe with respect to txnids in the digest"
   [digest]
-  (let [{:keys [txnids]} digest]
-    (filter #(not (if-let [txnid (:txnid %)] (contains? txnids txnid))))))
+  (let [{:keys [txnids]} digest] (filter #(not (contains? txnids (:txnid %))))))
 
 (defn infer-secondary-accounts-xf
   "Return a transducer to infer secondary accounts from payees and narrations"

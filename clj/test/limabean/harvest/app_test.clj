@@ -1,13 +1,10 @@
 (ns limabean.harvest.app-test
   (:require [limabean.harvest.app :as sut]
-            [clojure.data :as data]
             [clojure.java.io :as io]
             [clojure.java.shell :as shell]
             [clojure.string :as str]
-            [clojure.test :refer :all])
+            [clojure.test :refer [deftest is testing]])
   (:import [java.nio.file Files]))
-
-(defn test-base-path [] (file-seq) [io/file "../test-cases"])
 
 (def TEST-CASES-DIR "../test-cases")
 (def TEST-CONFIG-PATH (.getPath (io/file TEST-CASES-DIR "harvest.edn")))

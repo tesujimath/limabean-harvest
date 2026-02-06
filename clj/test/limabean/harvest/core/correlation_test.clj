@@ -1,5 +1,5 @@
 (ns limabean.harvest.core.correlation-test
-  (:require [clojure.test :refer :all]
+  (:require [clojure.test :refer [deftest is testing]]
             [limabean.harvest.core.correlation :as sut]))
 
 (deftest with-provenance-test

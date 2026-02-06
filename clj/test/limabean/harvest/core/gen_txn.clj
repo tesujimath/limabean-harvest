@@ -1,13 +1,9 @@
 (ns limabean.harvest.core.gen-txn
   (:require [clojure.test.check.generators :as gen]
-            [clojure.string :as str]
             [clojure.spec.alpha :as s]
             [java-time.api :as jt]
             [limabean.harvest.core.correlation :as correlation]
-            [limabean.harvest.spec.txn :as txn])
-  (:import [java.time LocalDate]
-           [java.math BigDecimal]))
-
+            [limabean.harvest.spec.txn :as txn]))
 
 (defn realized-txn-gen
   "Generate a realized txn, with accid among known-accids with freq-known, and randomly otherwise"
@@ -23,7 +19,8 @@
     (correlation/with-id (into {}
                                (keep (fn [[k v]] (when v [k v])))
                                [[:dct :txn] [:date date] [:accid accid]
-                                [:payee payee] [:units units] [:cur cur]]))))
+                                [:payee payee] [:narration narration]
+                                [:units units] [:cur cur]]))))
 
 (defn qualified-txn-gen
   "Generate a qualified txn"

@@ -1,7 +1,6 @@
 (ns limabean.harvest.adapter.beanfile
   (:require [cheshire.core :as cheshire]
             [clojure.java.shell :as shell]
-            [clojure.string :as str]
             [java-time.api :as jt]))
 
 (def readers {'time/date #(jt/local-date %)})

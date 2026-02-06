@@ -1,6 +1,5 @@
 (ns limabean.harvest.core.sort
-  (:require [java-time.api :as jt]
-            [limabean.harvest.core.transient :refer [update!]]))
+  (:require [limabean.harvest.core.transient :refer [update!]]))
 
 (defn append-to-txns!
   "Simply append in its base date."

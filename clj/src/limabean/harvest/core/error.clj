@@ -37,9 +37,7 @@
                                                  :details)
             ;; append any unprocessed fields from e-data
             true ((fn [[e-data s]]
-                    (let [s' (if (not (empty? e-data))
-                               (format "%s\n%s" s e-data)
-                               s)]
+                    (let [s' (if (seq e-data) (format "%s\n%s" s e-data) s)]
                       [{} s']))))]
     s))
 
