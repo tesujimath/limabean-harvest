@@ -33,6 +33,20 @@
                 :import-path
                 :hdr
                 :config-path)
+            (= e-type :limabean.harvest/error-no-base-realizer)
+              (remove-and-format #(format ", realizer %s, configuration %s"
+                                          (:realizer %)
+                                          (:config-path %))
+                                 :import-path
+                                 :hdr
+                                 :config-path)
+            (= e-type :limabean.harvest/error-no-txn-realizer)
+              (remove-and-format #(format ", realizer %s, configuration %s"
+                                          (:realizer %)
+                                          (:config-path %))
+                                 :import-path
+                                 :hdr
+                                 :config-path)
             (:details e-data) (remove-and-format #(format "\n%s\n" (:details %))
                                                  :details)
             ;; append any unprocessed fields from e-data

@@ -23,7 +23,7 @@ Phase 1 import unwraps the container (OFX, CSV, whatever) into generic JSON, usi
 
 Differences between instituions is handled by Phase 2 configuration, with minimal (but non-zero) use of custom code.
 
-### Phase 2 - Contextual import
+### Phase 2 - Realization
 
 Phase 2 uses a digest of a Beancount file for context, which enables:
 
