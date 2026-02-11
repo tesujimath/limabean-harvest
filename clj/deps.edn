@@ -1,5 +1,6 @@
 {:aliases
-   {:build {:deps {io.github.clojure/tools.build {:mvn/version "0.10.12"},
+   {:build {:deps {cheshire/cheshire {:mvn/version "6.1.0"},
+                   io.github.clojure/tools.build {:mvn/version "0.10.12"},
                    slipset/deps-deploy {:mvn/version "0.2.1"}},
             :ns-default build},
     :cider/nrepl {:extra-deps {cider/cider-nrepl {:mvn/version "0.58.0"},
@@ -8,18 +9,18 @@
     :codox
       {:exec-args
          {:metadata {:doc/format :markdown},
-          :namespaces [limabean limabean.core.filters limabean.core.inventory
-                       limabean.core.journal limabean.core.registry
-                       limabean.core.rollup limabean.core.xf],
+          :namespaces [limabean.harvest.api
+                       limabean.harvest.api.contrib.first-direct
+                       limabean.harvest.api.contrib.kiwibank-ofx1],
           :source-paths ["src"],
           :source-uri
-            "https://github.com/tesujimath/limabean/blob/main/clj/src/{classpath}#L{line}"},
+            "https://github.com/tesujimath/limabean-harvest/blob/main/clj/src/{classpath}#L{line}"},
        :exec-fn codox.main/generate-docs,
        :extra-deps {codox/codox {:mvn/version "0.10.8"}}},
     :dev {:extra-deps {org.clojure/test.check {:mvn/version "1.1.1"}},
           :extra-paths ["dev" "test"],
           :main-opts ["-m" "user"]},
-    :neil {:project {:name io.github.tesujimath/limabean}},
+    :neil {:project {:name io.github.tesujimath/limabean-harvest}},
     :run-m {:main-opts ["-m" "limabean.harvest.main"]},
     :run-x {:exec-args {:name "Clojure"},
             :exec-fn greet,

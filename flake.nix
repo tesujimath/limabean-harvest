@@ -68,6 +68,10 @@
                   license = with licenses; [ asl20 mit ];
                   # maintainers = [ maintainers.tesujimath ];
                 };
+
+                propagatedBuildInputs = with pkgs; [
+                  clojure
+                ];
               };
 
         in
@@ -80,7 +84,6 @@
               cargo-udeps
               cargo-outdated
               cargo-edit
-              gdb
 
               # useful tools:
               beancount

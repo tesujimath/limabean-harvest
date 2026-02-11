@@ -9,16 +9,23 @@
 (def TEST-CASES-DIR "../test-cases")
 (def TEST-CONFIG-PATH (.getPath (io/file TEST-CASES-DIR "harvest.edn")))
 
+(defn- sorted-dir-entries
+  "Return a sorted list of files in `dir`, an `io/file`"
+  [dir]
+  (let [unsorted (.list dir)] (sort (vec unsorted))))
+
 (defn get-tests
   "Look for expected output files in test-cases to generate test base paths"
   []
-  (->> (.list (io/file TEST-CASES-DIR))
+  (->> (sorted-dir-entries (io/file TEST-CASES-DIR))
        (filter #(str/ends-with? % ".expected.beancount"))
        (mapv (fn [expected]
                (let [name (str/replace expected ".expected.beancount" "")
-                     import-paths (mapv #(.getPath
-                                           (io/file TEST-CASES-DIR name %))
-                                    (.list (io/file TEST-CASES-DIR name)))
+                     import-paths
+                       (mapv #(.getPath (io/file TEST-CASES-DIR name %))
+                         ;; sorting matters here for deterministic import
+                         ;; of multiple files
+                         (sorted-dir-entries (io/file TEST-CASES-DIR name)))
                      context-candidate (io/file TEST-CASES-DIR
                                                 (format "%s.beancount" name))]
                  (cond-> {:name name,
@@ -59,8 +66,11 @@
   [name actual expected]
   (let [ok (= actual expected)]
     (when-not ok
-      (println (format "====================\n%s\n====================\n"
-                       (or (diff name actual expected) "no diffs"))))
+      (println
+        (format
+          "%s actual != expected\n====================\n%s\n====================\n"
+          name
+          (or (diff name actual expected) "no diffs"))))
     ok))
 
 (deftest import-tests

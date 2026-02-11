@@ -9,6 +9,7 @@
 
 (def cli-options
   [["-h" "--help" "Help"] ["-v" "--verbose" "Verbose"]
+   [nil "--version" "Show version and exit"]
    [nil "--context PATH"
     "path to Beancount file for import context, default $LIMABEAN_BEANFILE"
     :default-fn (fn [_opts] (System/getenv "LIMABEAN_BEANFILE"))]
@@ -41,6 +42,8 @@
         {:exit-message (usage summary), :ok? true}
       errors ; errors => exit with description of errors
         {:exit-message (error-msg errors)}
+      (:version options) (do (println "limabean-harvest.clj" (app/version))
+                             (System/exit 0))
       ;; custom validation on arguments
       (not (:context options))
         {:exit-message
