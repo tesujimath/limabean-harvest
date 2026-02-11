@@ -16,4 +16,4 @@ build-clj:
 
 [working-directory: 'clj']
 clj-test:
-    neil test
+    clojure -X:test
