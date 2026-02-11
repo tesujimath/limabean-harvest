@@ -26,7 +26,7 @@ jobs:
         if: github.ref_type == 'tag'
         shell: bash
         run: |
-          VERSION=$(grep '^version' rust/limabean/Cargo.toml | head -1 | cut -d'"' -f2)
+          VERSION=$(grep '^version' rust/Cargo.toml | head -1 | cut -d'"' -f2)
           TAG=${GITHUB_REF_NAME#v}
           [ "$VERSION" = "$TAG" ]
 
@@ -53,8 +53,8 @@ jobs:
         if: runner.os != 'Windows'
         run: |
           mkdir -p release
-          cp rust/target/release/{limabean,limabean-pod} release/
-          tar czvf limabean-${{ matrix.os }}.tar.gz -C release .
+          cp rust/target/release/{limabean-harvest,limabean-digest,hull-csv,hull-ofx} release/
+          tar czvf limabean-harvest-${{ matrix.os }}.tar.gz -C release .
 
       - name: Package binaries (Windows)
         if: runner.os == 'Windows'
@@ -62,19 +62,21 @@ jobs:
         run: |
           mkdir -p release
           $bins = @(
-            "rust\target\release\limabean.exe",
-            "rust\target\release\limabean-pod.exe"
+            "rust\target\release\limabean-harvest.exe",
+            "rust\target\release\limabean-digest.exe",
+            "rust\target\release\hull-csv.exe",
+            "rust\target\release\hull-ofx.exe"
           )
           Copy-Item $bins release\
-          Compress-Archive -Path release\* -DestinationPath limabean-${{ matrix.os }}.zip
+          Compress-Archive -Path release\* -DestinationPath limabean-harvest-${{ matrix.os }}.zip
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: limabean-${{ matrix.os }}
+          name: limabean-harvest-${{ matrix.os }}
           path: |
-            limabean-${{ matrix.os }}.tar.gz
-            limabean-${{ matrix.os }}.zip
+            limabean-harvest-${{ matrix.os }}.tar.gz
+            limabean-harvest-${{ matrix.os }}.zip
 
       - name: Setup Clojure
         if: matrix.os == 'ubuntu-latest'
@@ -91,13 +93,13 @@ jobs:
           cd clj
           clojure -T:build deploy
 
-      - name: Publish limabean crate
+      - name: Publish limabean-harvest crate
         if: ${{ matrix.os == 'ubuntu-latest' && !contains(github.ref_name, 'SNAPSHOT') }}
         env:
-          CARGO_REGISTRY_TOKEN: ${{ secrets.LIMABEAN_CRATE_DEPLOY_TOKEN }}
+          CARGO_REGISTRY_TOKEN: ${{ secrets.LIMABEAN_HARVEST_CRATE_DEPLOY_TOKEN }}
         run: |
           cd rust
-          cargo publish --package limabean
+          cargo publish
 
   release:
     needs: build
