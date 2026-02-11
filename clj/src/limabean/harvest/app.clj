@@ -4,6 +4,7 @@
             [limabean.harvest.adapter.config :as config]
             [limabean.harvest.adapter.logging :as logging]
             [limabean.harvest.adapter.prepare :as prepare]
+            [limabean.harvest.adapter.user-clj :as user-clj]
             [limabean.harvest.core.config :refer [DEFAULT-CONFIG]]
             [limabean.harvest.core.correlation :as correlation]
             [limabean.harvest.core.digest :as digest]
@@ -75,6 +76,7 @@
     (let [config-path (:config opts)
           beanfile (:context opts)
           standalone (:standalone opts)
+          _ (user-clj/load-user-cljs)
           config
             (if config-path (config/read-from-file config-path) DEFAULT-CONFIG)
           digest (if beanfile (beanfile/digest beanfile) beanfile/EMPTY-DIGEST)

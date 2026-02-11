@@ -95,7 +95,7 @@
               PATH=$PATH:$(pwd)/scripts.dev:$(pwd)/rust/target/debug
 
               export LIMABEAN_HARVEST_CLJ_LOCAL_ROOT=$(pwd)/clj
-              export LIMABEAN_HARVEST_USER_CLJ=$(pwd)/examples/clj/user.clj
+              export LIMABEAN_HARVEST_USER_CLJ=$(pwd)/examples/clj/local.clj
               export LIMABEAN_HARVEST_LOG=$(pwd)/limabean-harvest.log
             '';
           };
