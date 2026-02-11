@@ -1,12 +1,16 @@
 # limabean-harvest
 
-This is a new importer and framework for [Beancount](https://github.com/beancount/beancount) using [Rust](https://rust-lang.org) and [Clojure](https://clojure.org/) and the [Lima parser](https://github.com/tesujimath/beancount-parser-lima) with the following features:
+This is a new importer and framework for [Beancount](https://github.com/beancount/beancount) using [Rust](https://rust-lang.org) and [Clojure](https://clojure.org/) and the [Lima parser](https://github.com/tesujimath/beancount-parser-lima).
 
-- import from CSV or OFX v1 into Beancount format
-- lookup primary account for import from OFX `acctid` field
-- infer secondary accounts for postings from payees and narrations in existing Beancount file
-- construct transaction ID from OFX `acctid` anf `fitid` fields, and reject import of duplicate transactions
-- pair up transactions between accounts where both accounts are imported in the same group
+There are existing and mature import frameworks for Beancount, so why build another one?  The differentiating features of limabean-harvest are:
+
+- configuration as data structure not code (but see below for an argument that says this is a misfeature!)
+- inference of secondary accounts from payee and narration fields, which in particular enables:
+- pairing of transactions between accounts where both accounts are imported in the same group
+
+Transaction pairing is perhaps its most compelling feature, to avoid duplication of transactions when importing from accounts at both ends of a transaction.
+
+See the following pages for further details.
 
 - [Features](clj/doc/10-features.md)
 - [Installation](clj/doc/20-installation.md)
