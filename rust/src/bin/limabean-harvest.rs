@@ -1,30 +1,26 @@
 use std::{ffi::OsStr, process::Command};
 
-fn main() {
-    let args = std::env::args().skip(1).collect::<Vec<_>>();
-    let verbose = args.iter().any(|arg| arg == "-v" || arg == "--verbose");
+#[cfg(unix)]
+fn run_or_fail(mut cmd: Command) {
+    use std::os::unix::process::CommandExt;
 
-    let mut clojure_cmd = Command::new("clj");
-    clojure_cmd
-        .arg("-Sdeps")
-        .arg(deps())
-        .arg("-M")
-        .arg("-m")
-        .arg("limabean.harvest.main")
-        .args(
-            args.iter()
-                .map(|s| OsStr::new(s.as_str()))
-                .collect::<Vec<_>>(),
-        );
+    let e = cmd.exec(); // on success does not return
 
-    if verbose {
-        eprintln!("{:?}", &clojure_cmd);
-    }
-
-    run_or_fail_with_message(clojure_cmd)
+    eprintln!(
+        "limabean-harvest can't run {}: {}",
+        cmd.get_program().to_string_lossy(),
+        &e
+    );
+    std::process::exit(1);
 }
 
-fn run_or_fail_with_message(mut cmd: Command) {
+#[cfg(windows)]
+fn run_or_fail(mut cmd: Command) {
+    let cmd = cmd
+        .stdin(std::process::Stdio::inherit())
+        .stdout(std::process::Stdio::inherit())
+        .stderr(std::process::Stdio::inherit());
+
     match cmd.spawn() {
         Ok(mut child) => {
             let exit_status = child
@@ -50,21 +46,52 @@ fn run_or_fail_with_message(mut cmd: Command) {
 }
 
 const LIMABEAN_HARVEST_CLJ_LOCAL_ROOT: &str = "LIMABEAN_HARVEST_CLJ_LOCAL_ROOT";
+const VERSION: &str = env!("CARGO_PKG_VERSION");
 
-/// deps arg, either from LIMABEAN_CLJ_LOCAL_ROOT or default from Clojars for the matching version
+/// deps arg, either from LIMABEAN_HARVEST_CLJ_LOCAL_ROOT or default from Clojars for the matching version
 fn deps() -> String {
     let limabean_harvest_coord =
         if let Ok(local_root) = std::env::var(LIMABEAN_HARVEST_CLJ_LOCAL_ROOT) {
             format!(r###"{{:local/root "{}"}}"###, &local_root,)
         } else {
-            let version = env!("CARGO_PKG_VERSION");
-
-            format!(r###"{{:mvn/version "{}"}}"###, version,)
+            format!(r###"{{:mvn/version "{}"}}"###, VERSION)
         };
 
     format!(
-        r###"{{:deps {{io.github.tesujimath/limabean.harvest {}}}}}
-"###,
+        r###"{{:deps {{io.github.tesujimath/limabean-harvest {}}}}}"###,
         limabean_harvest_coord
     )
+}
+
+/// Additional Java options, if any
+const JVM_OPTIONS: &[&str] = &[];
+
+fn main() {
+    let args = std::env::args().skip(1).collect::<Vec<_>>();
+    let verbose = args.iter().any(|arg| arg == "-v" || arg == "--verbose");
+    let version = args.iter().any(|arg| arg == "--version");
+
+    if version {
+        println!("limabean-harvest.rs  {VERSION}");
+    }
+
+    let mut clojure_cmd = Command::new("clojure"); // use clojure not clj to avoid rlwrap
+    clojure_cmd
+        .args(JVM_OPTIONS.iter().map(|opt| format!("-J{}", opt)))
+        .arg("-Sdeps")
+        .arg(deps())
+        .arg("-M")
+        .arg("-m")
+        .arg("limabean.harvest.main")
+        .args(
+            args.iter()
+                .map(|s| OsStr::new(s.as_str()))
+                .collect::<Vec<_>>(),
+        );
+
+    if verbose {
+        eprintln!("{:?}", &clojure_cmd);
+    }
+
+    run_or_fail(clojure_cmd)
 }

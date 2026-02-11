@@ -1,0 +1,144 @@
+name: Cross-platform Release
+
+on:
+  push:
+    tags:
+      - "[0-9]*"
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    name: Build for ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Verify tag and Cargo version match
+        if: github.ref_type == 'tag'
+        shell: bash
+        run: |
+          VERSION=$(grep '^version' rust/limabean/Cargo.toml | head -1 | cut -d'"' -f2)
+          TAG=${GITHUB_REF_NAME#v}
+          [ "$VERSION" = "$TAG" ]
+
+      - name: Cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Run tests
+        run: |
+          cd rust
+          cargo test --all-targets
+
+      - name: Build release
+        run: |
+          cd rust
+          cargo build --release --all-targets
+
+      - name: Package binaries (Unix-like)
+        if: runner.os != 'Windows'
+        run: |
+          mkdir -p release
+          cp rust/target/release/{limabean,limabean-pod} release/
+          tar czvf limabean-${{ matrix.os }}.tar.gz -C release .
+
+      - name: Package binaries (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          mkdir -p release
+          $bins = @(
+            "rust\target\release\limabean.exe",
+            "rust\target\release\limabean-pod.exe"
+          )
+          Copy-Item $bins release\
+          Compress-Archive -Path release\* -DestinationPath limabean-${{ matrix.os }}.zip
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: limabean-${{ matrix.os }}
+          path: |
+            limabean-${{ matrix.os }}.tar.gz
+            limabean-${{ matrix.os }}.zip
+
+      - name: Setup Clojure
+        if: matrix.os == 'ubuntu-latest'
+        uses: DeLaGuardo/setup-clojure@13
+        with:
+          cli: latest
+
+      - name: Deploy to Clojars
+        if: matrix.os == 'ubuntu-latest'
+        env:
+          CLOJARS_USERNAME: ${{ secrets.CLOJARS_USERNAME }}
+          CLOJARS_PASSWORD: ${{ secrets.CLOJARS_PASSWORD }}
+        run: |
+          cd clj
+          clojure -T:build deploy
+
+      - name: Publish limabean crate
+        if: ${{ matrix.os == 'ubuntu-latest' && !contains(github.ref_name, 'SNAPSHOT') }}
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.LIMABEAN_CRATE_DEPLOY_TOKEN }}
+        run: |
+          cd rust
+          cargo publish --package limabean
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+
+      - name: Show files
+        run: ls -R dist
+
+      - name: Extract release notes from changelog
+        id: changelog
+        run: |
+          TAG=${GITHUB_REF_NAME#v}
+
+          if [[ "$TAG" == *SNAPSHOT ]]; then
+            VERSION="Unreleased"
+          else
+            VERSION="$TAG"
+          fi
+
+          echo "RELEASE_NOTES<<EOF" >> $GITHUB_OUTPUT
+          awk -v ver="$VERSION" '
+            $0 ~ "^## \\[" ver "\\]" {flag=1; next}
+            /^## \[/ {flag=0}
+            flag
+          ' clj/CHANGELOG.md >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/**/*
+          draft: ${{ contains(github.ref_name, 'SNAPSHOT') }}
+          body: ${{ steps.changelog.outputs.RELEASE_NOTES }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,5 +1,6 @@
 (ns limabean.harvest.app
-  (:require [limabean.harvest.adapter.beanfile :as beanfile]
+  (:require [clojure.java.io :as io]
+            [limabean.harvest.adapter.beanfile :as beanfile]
             [limabean.harvest.adapter.config :as config]
             [limabean.harvest.adapter.logging :as logging]
             [limabean.harvest.adapter.prepare :as prepare]
@@ -85,3 +86,19 @@
       (binding [*out* *err*]
         (println (error/format-user e))
         (System/exit 1)))))
+
+(defn version
+  "Get the library version from pom.properties, else returns \"unknown\"."
+  []
+  (or
+    (let [props (java.util.Properties.)]
+      (try
+        (with-open
+          [in
+             (io/input-stream
+               (io/resource
+                 "META-INF/maven/io.github.tesujimath/limabean-harvest/pom.properties"))]
+          (.load props in)
+          (.getProperty props "version"))
+        (catch Exception _ nil)))
+    "unknown"))
