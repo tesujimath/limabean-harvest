@@ -12,7 +12,7 @@
 (s/def ::hdr (s/map-of keyword? string?))
 
 (s/def ::classifier
-  (s/keys :req-un [::name ::selector ::ingester] :opt-un [::hdr]))
+  (s/keys :req-un [::id ::selector ::ingester] :opt-un [::hdr]))
 
 
 
@@ -32,7 +32,8 @@
 
 (s/def ::field-map (s/map-of keyword? ::field))
 
-(s/def ::name string?)
+(s/def ::id keyword?)
+(s/def ::base keyword?)
 (s/def ::selector (s/map-of keyword? string?))
 (s/def ::bal ::field-map)
 (s/def ::bal-fns (s/coll-of symbol? :kind vector?))
@@ -40,8 +41,8 @@
 (s/def ::txn-fns (s/coll-of symbol? :kind vector?))
 
 (s/def ::realizer
-  (s/keys :req-un [::name ::selector ::txn]
-          :opt-un [::bal ::bal-fns ::txn-fns]))
+  (s/keys :req-un [::id ::selector]
+          :opt-un [::base ::bal ::bal-fns ::txn ::txn-fns]))
 
 
 (s/def ::window int?)

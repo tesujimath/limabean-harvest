@@ -12,7 +12,7 @@
     (and (glob/match? path-glob import-path)
          (merge classifier
                 {:path import-path,
-                 :meta {:path import-path, :classifier (:name classifier)}}))
+                 :meta {:path import-path, :classifier (:id classifier)}}))
     nil))
 
 (defn classify
@@ -77,20 +77,42 @@
                        :command cmd,
                        :details (:err ingested)})))))
 
+(defn resolve-base-realizer
+  "If the realizer has :base, resolve it among those defined earlier"
+  [r realizers config-path]
+  (if-let [base-id (:base r)]
+    (let [earlier (take-while #(not= (:id r) (:id %)) realizers)
+          earlier-by-id (into {} (map #(vector (:id %) %) earlier))
+          base (get earlier-by-id base-id)]
+      (if base
+        (merge (resolve-base-realizer base earlier config-path) r)
+        (throw (ex-info "Failed to find base for realizer"
+                        {:type :limabean.harvest/error-no-base-realizer,
+                         :realizer (:id r),
+                         :config-path config-path}))))
+    r))
+
 (defn get-realizer
   "Find the first realizer whose selector matches the ingested header"
   [ingested config]
   (if-let [realizers (:realizers config)]
     (let [hdr (:hdr ingested)
-          realizer (some #(let [sel (:selector %)]
-                            (and (= sel (select-keys hdr (keys sel))) %))
-                         realizers)]
-      (or realizer
-          (throw (ex-info "Failed to find realizer"
-                          {:type :limabean.harvest/error-unmatched-realizer,
-                           :hdr hdr,
-                           :import-path (get-in ingested [:meta :path]),
-                           :config-path (:path config)}))))
+          r0 (or (some #(let [sel (:selector %)]
+                          (and (= sel (select-keys hdr (keys sel))) %))
+                       realizers)
+                 (throw (ex-info "Failed to find realizer"
+                                 {:type
+                                    :limabean.harvest/error-unmatched-realizer,
+                                  :hdr hdr,
+                                  :import-path (get-in ingested [:meta :path]),
+                                  :config-path (:path config)})))
+          r1 (resolve-base-realizer r0 realizers (:path config))]
+      (if (:txn r1)
+        r1
+        (throw (ex-info "Realizer missing :txn definition after base resolution"
+                        {:type :limabean.harvest/error-no-txn-realizer,
+                         :realizer (:id r1),
+                         :config-path (:path config)}))))
     (throw (ex-info "No realizers"
                     {:type :limabean.harvest/error-config,
                      :config-path (:path config)}))))
@@ -106,7 +128,7 @@
         realizer (get-realizer ingested config)
         _ (tel/log! {:id ::get-realizer, :data realizer})]
     (merge ingested
-           {:meta (merge (:meta ingested) {:realizer (:name realizer)}),
+           {:meta (merge (:meta ingested) {:realizer (:id realizer)}),
             :realizer realizer})))
 
 (defn xf

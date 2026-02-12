@@ -1,14 +1,48 @@
 # Customisation
 
-The import process is in two stages.
+As described in [features](10-features.md), the import process is in two phases.
 
-1. Read the file into an intermediate format, where each transaction is represented as a Clojure map
+1. Hulling
 
-2. Realize these intermediate transactions into Beancount format
+2. Realization
 
-The first stage is called hulling, and so far two programs are provided: `hull-csv` for generic CSV, and `hull-ofx` for OFX (with currently only OFX1 being supported).  This produces both a header and a list of transactions.
+## Hulling
 
-The second stage, realization, is customized in the config file.  In general, this requires mapping between whichever fields have been extracted from the import and the standard fields, which are as follows.
+Hulling is responsible for reading the import file into an intermediate format, where each transaction is represented as a Clojure map.  This uses an external program, and more may be provided.
+
+So far two hulling programs are provided:
+
+- `hull-csv` for generic CSV
+- `hull-ofx` for OFX (with currently only OFX1 being supported).
+
+Hulling produces both a header and a list of transactions.
+
+Selection of which hulling program to run and how is called classification, and is done on the basis of a path glob in the EDN config, for example:
+
+```
+{
+  :id :kiwibank-ofx1,
+  :selector {:path-glob "**kiwibank/*.ofx"
+  :ingester ["hull-ofx" :path],
+  :hdr {:dialect "kiwibank.ofx1"},
+
+}
+```
+
+`:id` simply identifies the classifier.
+
+`:selector` is what triggers this classifier to be selected.
+
+`:ingester` is a command invocation, where `:path` is substituted by the import path of the file in question.
+
+`:header` is optional, and supplements any header fields output by the hulling program in question.  These header fields are used for selection of which realizer to apply.
+
+Classifiers are matched in order, so if there are multiple matches, the first one wins.
+
+
+## Realization
+
+The second phase, realization, formats these intermediate transactions into Beancount format, and is defined by mapping from whichever fields have been extracted from the import and the standard fields, which are as follows.
 
 - `:accid` - account ID, expected to match metadata `accid` for an `open` directive in the context file
 - `:cur` - currency
@@ -18,31 +52,85 @@ The second stage, realization, is customized in the config file.  In general, th
 - `:txnid`
 - `:units`
 
-Fields may be extracted from any header or transaction field.  Type and date format must also be specified.
+### Field mapping
 
-For example, here is a fragment of the EDN config to extract transactions from OFX1 (a Clojure map):
+Fields may be extracted from any header or transaction field.  Type and date format must also be specified.  Type is optionally one of `:decimal` or `:date`, with omission meaning string.  Dates require an additional `:fmt` parameter,
+which is as defined in Java [`DateTimeFormatter.ofPattern`](https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html#patterns).
+
+For example, here is a fragment of the EDN config to extract transactions from OFX1:
 
 ```
 {
-     :txn {:accid {:key :acctid, :src :hdr},
-           :cur {:key :curdef, :src :hdr},
-           :date {:fmt "yyyyMMdd", :key :dtposted, :src :txn, :type :date},
-           :narration {:key :memo, :src :txn},
-           :payee {:key :name, :src :txn},
-           :txnid [{:key :acctid, :src :hdr} "." {:key :fitid, :src :txn}],
-           :units {:key :trnamt, :src :txn, :type :decimal}},
+     :txn {:accid {:src :hdr, :key :acctid},
+           :cur {:src :hdr, :key :curdef},
+           :date {:src :txn, :key :dtposted, :type :date, :fmt "yyyyMMdd"},
+           :narration {:src :txn, :key :memo},
+           :payee {:src :txn, :key :name},
+           :txnid [{:src :hdr, :key :acctid} "." {:src :txn, :key :fitid}],
+           :units {:src :txn, :key :trnamt, :type :decimal}},
 }
 ```
 
-The `:accid` field is extracted from the header field `:acctid`.
-The `:narration` field is extracted from the transaction field `:memo`.
-The `:date` field, of type `:date` and format `"yyyyMMdd"`, es extracted from the transaction field `:dtposted`.
-The `:txnid` field is a composite, the concatenation of header field `:acctid` and transaction field `:fitid`, with a separator of `"."`.
-The `:units` field is extracted from the transaction field `:trnamt` and is of type `:decimal`.
+In this example:
+
+- the `:accid` field is extracted from the header field `:acctid`.
+- the `:narration` field is extracted from the transaction field `:memo`.
+- the `:date` field, of type `:date` and format `"yyyyMMdd"`, es extracted from the transaction field `:dtposted`.
+- the `:txnid` field is a composite, the concatenation of header field `:acctid` and transaction field `:fitid`, with a separator of `"."`.
+- the `:units` field is extracted from the transaction field `:trnamt` and is of type `:decimal`.
 
 None of the field names are magical, so types must be explicitly annotated, except the default type of string.
 
-After this extraction/mapping process, an arbitrary list of functions may be applied to the result.  There are some library functions available, with more to be collated.  Or the user may provide their own via `$LIMABEAN_HARVEST_USER_CLJ`, for example:
+After this extraction/mapping process, an arbitrary list of functions may be applied to the result.  There are some library functions available, with more to be collated.
+
+### Realizer selection and inheritance
+
+The realizer is selected on the basis of matching header fields from phase 1, in order as with classifiers.  Usually the `:dialect` passed explicitly into Phase 1 is enough.  For example,
+
+```
+{
+  :base :generic-ofx1,
+  :id :kiwibank-ofx1,
+  :selector {:dialect "kiwibank.ofx1"},
+  :txn-fns [limabean.harvest.api.contrib.kiwibank-ofx1/clean-payee-narration]
+}
+```
+
+In this example, the `:kiwibank-ofx1` realizer is based on the already-defined `:generic-ofx1` realizer, with a single additional function to customize the mapping of the transaction fields after base realization.
+
+A realizer may be defined relative to one _earlier in the list of realizers_, by referencing its `id` in the field `:base`.  This is useful for customizing OFX import in minor ways without repeating most of the mapping.
+
+### CSVs, inferred accids, and balances
+
+A generic CSV realizer is not possible, and therefore realizers for CSV format are entirely institution-specific, for example for the British bank First direct:
+
+```
+{
+  :bal {:accid {:src :hdr, :key :inferred-accid},
+        :cur {:src :hdr, :key :cur},
+        :date {:src :txn, :key :date, :type :date, :fmt "dd/MM/yyyy"},
+        :units {:src :txn, :key :balance, :type :decimal}},
+  :bal-fns [limabean.harvest.api/inc-date],
+  :id :first-direct-csv,
+  :selector {:dialect "first-direct.csv"},
+  :txn {:accid {:src :hdr, :key :inferred-accid},
+        :cur {:src :hdr, :key :cur},
+        :date {:src :txn, :key :date, :type :date, :fmt "dd/MM/yyyy"},
+        :description {:src :txn, :key :description},
+        :units {:src :txn, :key :amount, :type :decimal}},
+  :txn-fns [limabean.harvest.api.contrib.first-direct/payee-narration]
+}
+```
+
+Note that this example illustrates two further points which have not yet been described.
+
+1. The header field `:inferred-accid` is generated before realization and available for use if the import path contains any of the account IDs defined in `accid` metadata in `open` directives in the context file.  In general this is only required if there is no account ID available from hulling.
+
+2. A balance directive may be generated from either the header or individual transactions.  In case of the latter, only the last balance is retained.  (Here the `inc-date` function is used to push the balance onto the next day, since Beancount balance directives apply to the beginning of the day.)
+
+### User provided code
+
+The user may provide their realizer functions via `$LIMABEAN_HARVEST_USER_CLJ`, for example:
 
 ```
 (ns local
