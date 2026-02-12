@@ -30,7 +30,7 @@
 <p><code>:id</code> simply identifies the classifier.</p>
 <p><code>:selector</code> is what triggers this classifier to be selected.</p>
 <p><code>:ingester</code> is a command invocation, where <code>:path</code> is substituted by the import path of the file in question.</p>
-<p><code>:header</code> is optional, and supplements any header fields output by the hulling program in question.  These header fields are used for selection of which realizer to apply.</p>
+<p><code>:hdr</code> is optional, and supplements any header fields output by the hulling program in question.  These header fields are used for selection of which realizer to apply.</p>
 <p>Classifiers are matched in order, so if there are multiple matches, the first one wins.</p>
 <h2><a href="#realization" id="realization"></a>Realization</h2>
 <p>The second phase, realization, formats these intermediate transactions into Beancount format, and is defined by mapping from whichever fields have been extracted from the import and the standard fields, which are as follows.</p>
@@ -120,4 +120,12 @@
      :txn-fns [local/lowercase-payee]}
 }
 </code></pre>
+<h2><a href="#configuration" id="configuration"></a>Configuration</h2>
+<p>The configuration is defined in EDN, passed on the command line with <code>--config</code> or via the environment variable <code>LIMABEAN_HARVEST_CONFIG</code> (with the command line flag taking priority), and is merged with the <a href="../src/limabean/harvest/core/config.clj">default configuration</a> in the following way:</p>
+<ul>
+<li>classifiers from default config are appended to those in user config, so applied as a fallback</li>
+<li>realizers from default config are prepended to those in user config, so may be used as a base</li>
+<li>output is deep merged, so individual values may be overridden while keeping the others</li>
+</ul>
+<p>See, for example, the <a href="../../test-cases/harvest.edn">configuration used for the tests</a>.</p>
 </div></div></div></body></html>

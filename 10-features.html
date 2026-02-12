@@ -30,4 +30,5 @@
 <p><code>limabean-harvest</code> has heuristics to pair up transactions which are imported in the same group, removing the need for this manual step.</p>
 <p>This requires secondary account inference to have allocated a unique candidate account.  (Multiple matches during secondary account inference precludes transaction pairing.)</p>
 <p>Pairing is performed only where the source and destination accounts and the value match, and the date is within some configurable threshold (default 3 days). The result is a single transaction with both <code>txnid</code> and <code>txnid2</code> metadata values, or a comment in the case of import files missing transaction IDs. The payee and narration from the second transaction are also preserved as <code>payee2</code> and <code>narration2</code> metadata fields.  These fields are used for account inference in subsequent imports.</p>
+<p>The pairing window may be adjusted in the configuration with e.g. <code>:pairing {:window 4}</code> or switched off altogether with <code>:pairing nil</code>.  A pairing window of 0 means that transactions to be paired must be for the same day.</p>
 </div></div></div></body></html>
