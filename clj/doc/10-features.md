@@ -56,3 +56,5 @@ This requires secondary account inference to have allocated a unique candidate a
 
 Pairing is performed only where the source and destination accounts and the value match, and the date is within some configurable threshold (default 3 days).
 The result is a single transaction with both `txnid` and `txnid2` metadata values, or a comment in the case of import files missing transaction IDs. The payee and narration from the second transaction are also preserved as `payee2` and `narration2` metadata fields.  These fields are used for account inference in subsequent imports.
+
+The pairing window may be adjusted in the configuration with e.g. `:pairing {:window 4}` or switched off altogether with `:pairing nil`.  A pairing window of 0 means that transactions to be paired must be for the same day.
