@@ -23,7 +23,7 @@
         narration (:narration txn)
         [prefix narration-proper] (str/split narration #";" 2)
         prefix (str/trim prefix)
-        narration-proper (str/trim narration-proper)
+        narration-proper (and narration-proper (str/trim narration-proper))
         payee-limit 32
         cleaned (cond
                   ;; we may have "<payee> ;<narration>"
