@@ -1,4 +1,28 @@
 (ns limabean.harvest.core.config)
 
-;; TODO better default config
-(def DEFAULT-CONFIG {:path "default config"})
+(def DEFAULT-CONFIG
+  {:path "default config",
+   :classifiers [{:id :generic-ofx,
+                  :ingester ["hull-ofx" :path],
+                  :selector {:path-glob "**.ofx"}}],
+   :output {:columns {:comment 40, :units 75},
+            :default {:acc {:assets "Assets:Unknown",
+                            :expenses "Expenses:Unknown",
+                            :income "Income:Unknown"}},
+            :indent 2},
+   :pairing {:window 3},
+   :realizers
+     [{:bal {:accid {:key :acctid, :src :hdr},
+             :cur {:key :curdef, :src :hdr},
+             :date {:fmt "yyyyMMdd", :key :dtasof, :src :hdr, :type :date},
+             :units {:key :balamt, :src :hdr, :type :decimal}},
+       :bal-fns ['limabean.harvest.api/inc-date],
+       :id :generic-ofx1,
+       :selector {:dialect "ofx1"},
+       :txn {:accid {:key :acctid, :src :hdr},
+             :cur {:key :curdef, :src :hdr},
+             :date {:fmt "yyyyMMdd", :key :dtposted, :src :txn, :type :date},
+             :narration {:key :memo, :src :txn},
+             :payee {:key :name, :src :txn},
+             :txnid [{:key :acctid, :src :hdr} "." {:key :fitid, :src :txn}],
+             :units {:key :trnamt, :src :txn, :type :decimal}}}]})

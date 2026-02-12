@@ -5,7 +5,6 @@
             [limabean.harvest.adapter.logging :as logging]
             [limabean.harvest.adapter.prepare :as prepare]
             [limabean.harvest.adapter.user-clj :as user-clj]
-            [limabean.harvest.core.config :refer [DEFAULT-CONFIG]]
             [limabean.harvest.core.correlation :as correlation]
             [limabean.harvest.core.digest :as digest]
             [limabean.harvest.core.error :as error]
@@ -13,7 +12,6 @@
             [limabean.harvest.core.pairing :as pairing]
             [limabean.harvest.core.realize :as realize]
             [limabean.harvest.core.sort :as sort]))
-
 
 (defn txns-from-prepared-ef
   "Eduction to harvest txns from a single prepared import file"
@@ -28,7 +26,7 @@
                 (digest/resolve-accid-xf digest)
                 (digest/dedupe-xf digest)
                 (logging/wrap
-                  (digest/infer-secondary-accounts-xf (:format config) digest)
+                  (digest/infer-secondary-accounts-xf (:output config) digest)
                   {:id ::resolved-txn}))
               txns)))
 
@@ -71,23 +69,21 @@
 (defn run
   "limabean-harvest entry point after CLI argument processing"
   [import-paths opts]
-  (try
-    (logging/initialize)
-    (let [config-path (:config opts)
-          beanfile (:context opts)
-          standalone (:standalone opts)
-          _ (user-clj/load-user-cljs)
-          config
-            (if config-path (config/read-from-file config-path) DEFAULT-CONFIG)
-          digest (if beanfile (beanfile/digest beanfile) beanfile/EMPTY-DIGEST)
-          harvested (harvest-txns config digest import-paths)]
-      (when (and standalone beanfile)
-        (println (format "include \"%s\"\n" beanfile)))
-      (run! println (eduction (format/xf (:format config)) harvested)))
-    (catch clojure.lang.ExceptionInfo e
-      (binding [*out* *err*]
-        (println (error/format-user e))
-        (System/exit 1)))))
+  (try (logging/initialize)
+       (let [beanfile (:context opts)
+             standalone (:standalone opts)
+             _ (user-clj/load-user-cljs)
+             config (config/build opts)
+             digest
+               (if beanfile (beanfile/digest beanfile) beanfile/EMPTY-DIGEST)
+             harvested (harvest-txns config digest import-paths)]
+         (when (and standalone beanfile)
+           (println (format "include \"%s\"\n" beanfile)))
+         (run! println (eduction (format/xf (:output config)) harvested)))
+       (catch clojure.lang.ExceptionInfo e
+         (binding [*out* *err*]
+           (println (error/format-user e))
+           (System/exit 1)))))
 
 (defn version
   "Get the library version from pom.properties, else returns \"unknown\"."

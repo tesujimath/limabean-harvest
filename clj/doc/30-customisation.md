@@ -35,7 +35,7 @@ Selection of which hulling program to run and how is called classification, and 
 
 `:ingester` is a command invocation, where `:path` is substituted by the import path of the file in question.
 
-`:header` is optional, and supplements any header fields output by the hulling program in question.  These header fields are used for selection of which realizer to apply.
+`:hdr` is optional, and supplements any header fields output by the hulling program in question.  These header fields are used for selection of which realizer to apply.
 
 Classifiers are matched in order, so if there are multiple matches, the first one wins.
 
@@ -150,3 +150,13 @@ used like this in the EDN config file:
      :txn-fns [local/lowercase-payee]}
 }
 ```
+
+## Configuration
+
+The configuration is defined in EDN, passed on the command line with `--config` or via the environment variable `LIMABEAN_HARVEST_CONFIG` (with the command line flag taking priority), and is merged with the [default configuration](../src/limabean/harvest/core/config.clj) in the following way:
+
+- classifiers from default config are appended to those in user config, so applied as a fallback
+- realizers from default config are prepended to those in user config, so may be used as a base
+- output is deep merged, so individual values may be overridden while keeping the others
+
+See, for example, the [configuration used for the tests](../../test-cases/harvest.edn).

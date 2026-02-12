@@ -14,7 +14,7 @@
 (s/def ::classifier
   (s/keys :req-un [::id ::selector ::ingester] :opt-un [::hdr]))
 
-
+(s/def ::classifiers (s/coll-of ::classifier :kind vector?))
 
 
 (s/def ::key keyword?)
@@ -44,16 +44,29 @@
   (s/keys :req-un [::id ::selector]
           :opt-un [::base ::bal ::bal-fns ::txn ::txn-fns]))
 
+(s/def ::realizers (s/coll-of ::realizer :kind vector?))
+
+
+(s/def ::comment int?)
+(s/def ::units int?)
+(s/def ::columns (s/keys :opt-un [::comment ::units]))
+
+(s/def ::assets string?)
+(s/def ::expenses string?)
+(s/def ::income string?)
+(s/def ::acc (s/keys :opt-un [::assets ::expenses ::income]))
+(s/def ::default (s/keys :opt-un [::acc]))
+
+(s/def ::indent int?)
+
+(s/def ::output (s/keys :opt-un [::columns ::default ::indent]))
 
 (s/def ::window int?)
-
-
-(s/def ::classifiers (s/coll-of ::classifier :kind vector?))
-(s/def ::realizers (s/coll-of ::realizer :kind vector?))
-(s/def ::pairing (s/keys :opt-un [::window]))
+(s/def ::pairing (s/nilable (s/keys :opt-un [::window])))
 
 
 (s/def ::path string?)
 
-(s/def ::raw-config (s/keys :req-un [::classifiers ::realizers]))
+(s/def ::raw-config
+  (s/keys :req-un [::classifiers ::realizers] :opt-un [::output ::pairing]))
 (s/def ::config (s/merge ::raw-config (s/keys :req-un [::path])))
