@@ -147,9 +147,9 @@ dependencies = [
 
 [[package]]
 name = "beancount-parser-lima"
-version = "0.14.2"
+version = "0.14.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a86c94874c69af660301064338794b17fa50ae288818718fe52e31856f8e14e0"
+checksum = "7215798cebc17de0a21a7e2f802002bf03921734ac351300d8b88327bc9c55e7"
 dependencies = [
  "anyhow",
  "ariadne",
@@ -571,7 +571,7 @@ checksum = "37c93d8daa9d8a012fd8ab92f088405fb202ea0b6ab73ee2482ae66af4f42091"
 
 [[package]]
 name = "limabean-harvest"
-version = "0.1.0-SNAPSHOT"
+version = "0.1.1"
 dependencies = [
  "beancount-parser-lima",
  "clap",
