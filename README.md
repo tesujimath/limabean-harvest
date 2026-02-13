@@ -14,6 +14,7 @@ See the following pages for further details.
 
 - [Features](clj/doc/10-features.md)
 - [Installation](clj/doc/20-installation.md)
+- [Usage](clj/doc/25-usage.md)
 - [Customisation](clj/doc/30-customisation.md)
 - [Diagnostics and Logging](clj/doc/40-diagnostics-and-logging.md)
 
