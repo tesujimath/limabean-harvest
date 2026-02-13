@@ -67,23 +67,27 @@
 (defn build
   "Read harvest config from EDN file (if any), merge with default, and resolve any function symbols"
   [opts]
-  (let [config-path (:config opts)
-        raw-string (error/slurp-or-throw
-                     config-path
-                     (ex-info "Can't read file"
-                              {:type :limabean.harvest/error-config,
-                               :config-path config-path}))
-        raw-config (edn/read-string raw-string)
-        merged-config (if (s/valid? ::spec/raw-config raw-config)
-                        (-> raw-config
-                            (assoc :path config-path)
-                            (merge-default))
-                        (throw (ex-info "invalid config"
-                                        {:type :limabean.harvest/error-config,
-                                         :config-path config-path,
-                                         :details (with-out-str
-                                                    (expound/expound
-                                                      ::spec/raw-config
-                                                      raw-config))})))
-        _ (tel/log! {:id ::config, :data merged-config})]
-    (resolve-fns merged-config)))
+  (let [config (if-let [config-path (:config opts)]
+                 (let [raw-string (error/slurp-or-throw
+                                    config-path
+                                    (ex-info "Can't read file"
+                                             {:type
+                                                :limabean.harvest/error-config,
+                                              :config-path config-path}))
+                       raw-config (edn/read-string raw-string)
+                       merged-config
+                         (if (s/valid? ::spec/raw-config raw-config)
+                           (-> raw-config
+                               (assoc :path config-path)
+                               (merge-default))
+                           (throw (ex-info
+                                    "invalid config"
+                                    {:type :limabean.harvest/error-config,
+                                     :config-path config-path,
+                                     :details (with-out-str (expound/expound
+                                                              ::spec/raw-config
+                                                              raw-config))})))]
+                   merged-config)
+                 DEFAULT-CONFIG)
+        _ (tel/log! {:id ::config, :data config})]
+    (resolve-fns config)))

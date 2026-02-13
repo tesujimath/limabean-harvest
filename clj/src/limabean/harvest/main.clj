@@ -55,8 +55,9 @@
       (not (:context options))
         {:exit-message
            "limabean-harvest: --context or $LIMABEAN_HARVEST_CONFIG is required"}
-      (let [config (io/file (:config options))]
-        (not (and (.exists config) (.isFile config))))
+      (and (:config options)
+           (let [config (io/file (:config options))]
+             (not (and (.exists config) (.isFile config)))))
         {:exit-message (str "limabean-harvest: no such config file "
                             (:config options))}
       (empty? arguments) {:exit-message "no import files given"}
