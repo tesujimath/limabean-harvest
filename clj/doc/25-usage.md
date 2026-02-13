@@ -1,7 +1,11 @@
 # Basic usage
 
+The imported directives are printed on standard output, so redirect that to a file, or append to your beanfile directly.
+
 ```
-kiri> limabean-harvest --config ./test-cases/harvest.edn --context ./test-cases/kiwibank.beancount ./test-cases/kiwibank/*.ofx
+kiri> limabean-harvest --config ./test-cases/harvest.edn --context ./test-cases/kiwibank.beancount \
+        ./test-cases/kiwibank/*.ofx
+
 2025-03-31 txn "INTEREST EARNED" ""
   txnid: "99-1234-0123456-07.31Mar2025.1"
   Assets:Bank:Current                                                      4.72 NZD
