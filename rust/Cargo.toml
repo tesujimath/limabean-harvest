@@ -1,6 +1,6 @@
 [package]
 name = "limabean-harvest"
-version = "0.1.0-SNAPSHOT"
+version = "0.1.0"
 edition = "2024"
 license = "MIT OR Apache-2.0"
 description = "Beancount importer backend for limabean-harvest"
