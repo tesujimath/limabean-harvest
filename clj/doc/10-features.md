@@ -11,7 +11,7 @@ The intention is that OFX v1 import is complete and general purpose.
 
 CSV import, however, requires customising for each financial instituion according to the headers they export in CSV.
 
-The import process is governed by configuration in [EDN](https://github.com/edn-format/edn), as in [this example](test-cases/harvest.edn).
+The import process is governed by configuration in [EDN](https://github.com/edn-format/edn), as in [this example](../../test-cases/harvest.edn).
 
 ## Import Phases
 
