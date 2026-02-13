@@ -78,8 +78,9 @@
                (if beanfile (beanfile/digest beanfile) beanfile/EMPTY-DIGEST)
              harvested (harvest-txns config digest import-paths)]
          (when (and standalone beanfile)
-           (println (format "include \"%s\"\n" beanfile)))
-         (run! println (eduction (format/xf (:output config)) harvested)))
+           (print (format "include \"%s\"\n\n" beanfile)))
+         (run! #(print (format "%s\n" %))
+               (eduction (format/xf (:output config)) harvested)))
        (catch clojure.lang.ExceptionInfo e
          (binding [*out* *err*]
            (println (error/format-user e))
