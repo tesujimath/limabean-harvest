@@ -578,6 +578,7 @@ dependencies = [
  "color-eyre",
  "csv",
  "hashbrown 0.15.5",
+ "quick-xml",
  "regex",
  "rust_decimal",
  "serde",
@@ -848,6 +849,16 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 1.0.109",
+]
+
+[[package]]
+name = "quick-xml"
+version = "0.39.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bd58c6a1fc307e1092aa0bb23d204ca4d1f021764142cd0424dccc84d2d5d106"
+dependencies = [
+ "memchr",
+ "serde",
 ]
 
 [[package]]

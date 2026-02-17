@@ -84,6 +84,8 @@
               cargo-udeps
               cargo-outdated
               cargo-edit
+              clippy
+              rustc
 
               jre
               # useful tools:
