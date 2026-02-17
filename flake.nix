@@ -49,12 +49,12 @@
             git
           ];
 
+          version = (builtins.fromTOML (builtins.readFile ./rust/Cargo.toml)).package.version;
           limabean-harvest =
-            let cargo = builtins.fromTOML (builtins.readFile ./rust/Cargo.toml);
-            in pkgs.rustPlatform.buildRustPackage
+            pkgs.rustPlatform.buildRustPackage
               {
+                inherit version;
                 pname = "limabean-harvest";
-                version = cargo.package.version;
 
                 src = ./rust;
 
@@ -85,6 +85,7 @@
               cargo-outdated
               cargo-edit
 
+              jre
               # useful tools:
               beancount
               beanquery
@@ -94,6 +95,7 @@
             shellHook = ''
               PATH=$PATH:$(pwd)/scripts.dev:$(pwd)/rust/target/debug
 
+              export LIMABEAN_HARVEST_UBERJAR=$(pwd)/clj/target/limabean-harvest-${version}-standalone.jar
               export LIMABEAN_HARVEST_CLJ_LOCAL_ROOT=$(pwd)/clj
               export LIMABEAN_HARVEST_USER_CLJ=$(pwd)/examples/clj/local.clj
               export LIMABEAN_HARVEST_LOG=$(pwd)/limabean-harvest.log

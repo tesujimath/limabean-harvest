@@ -1,5 +1,77 @@
 use std::{ffi::OsStr, process::Command};
 
+pub(crate) enum Runtime {
+    Java(String),
+    Clojure(String),
+}
+
+const LIMABEAN_HARVEST_CLJ_LOCAL_ROOT: &str = "LIMABEAN_HARVEST_CLJ_LOCAL_ROOT";
+const LIMABEAN_HARVEST_UBERJAR: &str = "LIMABEAN_HARVEST_UBERJAR";
+const LIMABEAN_HARVEST_UBERJAR_BUILDTIME: Option<&str> = option_env!("LIMABEAN_HARVEST_UBERJAR");
+const VERSION: &str = env!("CARGO_PKG_VERSION");
+
+/// Additional Java options, if any
+const JVM_OPTIONS: &[&str] = &[];
+
+impl Runtime {
+    fn clojure(limabean_harvest_coord: String) -> Self {
+        Runtime::Clojure(format!(
+            r###"{{:deps {{io.github.tesujimath/limabean-harvest {}}}}}"###,
+            limabean_harvest_coord
+        ))
+    }
+
+    fn java(uberjar: String) -> Self {
+        Runtime::Java(uberjar)
+    }
+
+    pub(crate) fn from_env() -> Self {
+        if let Ok(local_root) = std::env::var(LIMABEAN_HARVEST_CLJ_LOCAL_ROOT) {
+            Runtime::clojure(format!(r###"{{:local/root "{}"}}"###, &local_root))
+        } else if let Ok(uberjar) = std::env::var(LIMABEAN_HARVEST_UBERJAR) {
+            Runtime::java(uberjar)
+        } else if let Some(uberjar) = LIMABEAN_HARVEST_UBERJAR_BUILDTIME {
+            Runtime::java(uberjar.to_string())
+        } else {
+            Runtime::clojure(format!(r###"{{:mvn/version "{}"}}"###, VERSION))
+        }
+    }
+
+    fn command<S>(&self, args: &[S]) -> Command
+    where
+        S: AsRef<str>,
+    {
+        use Runtime::*;
+
+        let mut cmd = match self {
+            Java(uberjar) => {
+                let mut java_cmd = Command::new("java");
+                java_cmd.args(JVM_OPTIONS.iter()).arg("-jar").arg(uberjar);
+                java_cmd
+            }
+            Clojure(deps) => {
+                let mut clojure_cmd = Command::new("clojure"); // use clojure not clj to avoid rlwrap
+                clojure_cmd
+                    .args(JVM_OPTIONS.iter().map(|opt| format!("-J{}", opt)))
+                    .arg("-Sdeps")
+                    .arg(deps)
+                    .arg("-M")
+                    .arg("-m")
+                    .arg("limabean.harvest.main");
+                clojure_cmd
+            }
+        };
+
+        cmd.args(
+            args.iter()
+                .map(|s| OsStr::new(s.as_ref()))
+                .collect::<Vec<_>>(),
+        );
+
+        cmd
+    }
+}
+
 #[cfg(unix)]
 fn run_or_fail(mut cmd: Command) {
     use std::os::unix::process::CommandExt;
@@ -45,28 +117,8 @@ fn run_or_fail(mut cmd: Command) {
     }
 }
 
-const LIMABEAN_HARVEST_CLJ_LOCAL_ROOT: &str = "LIMABEAN_HARVEST_CLJ_LOCAL_ROOT";
-const VERSION: &str = env!("CARGO_PKG_VERSION");
-
-/// deps arg, either from LIMABEAN_HARVEST_CLJ_LOCAL_ROOT or default from Clojars for the matching version
-fn deps() -> String {
-    let limabean_harvest_coord =
-        if let Ok(local_root) = std::env::var(LIMABEAN_HARVEST_CLJ_LOCAL_ROOT) {
-            format!(r###"{{:local/root "{}"}}"###, &local_root,)
-        } else {
-            format!(r###"{{:mvn/version "{}"}}"###, VERSION)
-        };
-
-    format!(
-        r###"{{:deps {{io.github.tesujimath/limabean-harvest {}}}}}"###,
-        limabean_harvest_coord
-    )
-}
-
-/// Additional Java options, if any
-const JVM_OPTIONS: &[&str] = &[];
-
 fn main() {
+    let runtime = Runtime::from_env();
     let args = std::env::args().skip(1).collect::<Vec<_>>();
     let verbose = args.iter().any(|arg| arg == "-v" || arg == "--verbose");
     let version = args.iter().any(|arg| arg == "--version");
@@ -75,23 +127,11 @@ fn main() {
         println!("limabean-harvest.rs  {VERSION}");
     }
 
-    let mut clojure_cmd = Command::new("clojure"); // use clojure not clj to avoid rlwrap
-    clojure_cmd
-        .args(JVM_OPTIONS.iter().map(|opt| format!("-J{}", opt)))
-        .arg("-Sdeps")
-        .arg(deps())
-        .arg("-M")
-        .arg("-m")
-        .arg("limabean.harvest.main")
-        .args(
-            args.iter()
-                .map(|s| OsStr::new(s.as_str()))
-                .collect::<Vec<_>>(),
-        );
+    let cmd = runtime.command(&args);
 
     if verbose {
-        eprintln!("{:?}", &clojure_cmd);
+        eprintln!("{:?}", &cmd);
     }
 
-    run_or_fail(clojure_cmd)
+    run_or_fail(cmd)
 }
