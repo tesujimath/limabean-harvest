@@ -21,8 +21,8 @@ fn main() -> Result<()> {
 
     let cli = Cli::parse();
 
-    let hull = read_ofx_file(&cli.ofx_path)?;
-    hull.write(out_w)
+    let hulls = Hulls(vec![read_ofx_file(&cli.ofx_path)?]);
+    hulls.write(out_w)
 }
 
 pub(crate) fn read_ofx_file(path: &Path) -> Result<Hull> {
@@ -43,7 +43,7 @@ pub(crate) fn read_ofx_file(path: &Path) -> Result<Hull> {
 
 #[path = "../hull.rs"]
 mod hull;
-use hull::Hull;
+use hull::{Hull, Hulls};
 
 #[path = "../ofx1.rs"]
 mod ofx1;

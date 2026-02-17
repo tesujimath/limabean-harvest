@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file. This change
 
 ## [Unreleased]
 
+### Changed
+
+- hulling protocol now returns a list rather than a single hull
+
 ### Added
 
 - Build uberjar for standalone use #10

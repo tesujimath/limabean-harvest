@@ -5,7 +5,7 @@
             [limabean.harvest.core.glob :as glob]
             [taoensso.telemere :as tel]))
 
-(defn select-by-path
+(defn- select-by-path
   "Return the classifier if selected, augmented with path and meta data"
   [classifier import-path]
   (if-let [path-glob (get-in classifier [:selector :path-glob])]
@@ -15,7 +15,7 @@
                  :meta {:path import-path, :classifier (:id classifier)}}))
     nil))
 
-(defn classify
+(defn- classify
   "Classify an import."
   [import-path config]
   (if-let [classifiers (:classifiers config)]
@@ -28,7 +28,7 @@
                     {:type :limabean.harvest/error-config,
                      :config-path (:path config)}))))
 
-(defn infer-accid-from-path
+(defn- infer-accid-from-path
   "Infer the accid from the path of the import file, by matching against accids in the digest"
   [hdr digest path]
   (let [accids (or (and digest (:accids digest)) {})
@@ -51,18 +51,20 @@
                           matching)})
           hdr))))
 
-(defn infer-header-fields
+(defn- infer-header-fields
   "Augment the header of a classified import with any inferred fields."
   [classified digest]
   (update classified :hdr infer-accid-from-path digest (:path classified)))
 
-(defn substitute
+(defn- substitute
   "Substitute k for v among items"
   [items k v]
   (mapv #(if (= % k) v %) items))
 
-(defn ingest
-  "Ingest an import file once it has been classified"
+(defn- ingest
+  "Ingest an import file once it has been classified.
+
+  Note that a single file ingests as a list of hulls, each a map with keys :hdr :txns."
   [classified]
   (let [{:keys [ingester path]} classified
         cmd (substitute ingester :path path)
@@ -70,14 +72,18 @@
     (if (= (:exit ingested) 0)
       (-> (:out ingested)
           (cheshire/parse-string true)
-          (assoc :meta (:meta classified))
-          (update :hdr #(merge % (:hdr classified))))
+          ((fn [hulls]
+             (mapv (fn [hull]
+                     (-> hull
+                         (assoc :meta (:meta classified))
+                         (update :hdr #(merge % (:hdr classified)))))
+               hulls))))
       (throw (ex-info (format "Failed to ingest %s" path)
                       {:type :limabean.harvest/error-external-command,
                        :command cmd,
                        :details (:err ingested)})))))
 
-(defn resolve-base-realizer
+(defn- resolve-base-realizer
   "If the realizer has :base, resolve it among those defined earlier"
   [r realizers config-path]
   (if-let [base-id (:base r)]
@@ -92,7 +98,7 @@
                          :config-path config-path}))))
     r))
 
-(defn get-realizer
+(defn- get-realizer
   "Find the first realizer whose selector matches the ingested header"
   [ingested config]
   (if-let [realizers (:realizers config)]
@@ -117,21 +123,24 @@
                     {:type :limabean.harvest/error-config,
                      :config-path (:path config)}))))
 
-(defn prepare
-  "Classify, infer header fields, and ingest a single import file, and resolve its realizer"
+(defn- prepare
+  "Classify, infer header fields, and ingest a single import file, and resolve the realizers for its hulls"
   [import-path config digest]
   (let [classified (classify import-path config)
         _ (tel/log! {:id ::classify, :data classified})
         inferred (infer-header-fields classified digest)
         _ (tel/log! {:id ::infer-hdr, :data inferred})
-        ingested (ingest inferred)
-        realizer (get-realizer ingested config)
-        _ (tel/log! {:id ::get-realizer, :data realizer})]
-    (merge ingested
-           {:meta (merge (:meta ingested) {:realizer (:id realizer)}),
-            :realizer realizer})))
+        hulls (ingest inferred)
+        realizers (mapv #(get-realizer % config) hulls)
+        _ (tel/log! {:id ::get-realizer, :data realizers})]
+    (mapv (fn [hull realizer]
+            (merge hull
+                   {:meta (merge (:meta hull) {:realizer (:id realizer)}),
+                    :realizer realizer}))
+      hulls
+      realizers)))
 
 (defn xf
   "Transducer to prepare import files."
   [config digest]
-  (map #(prepare % config digest)))
+  (mapcat #(prepare % config digest)))

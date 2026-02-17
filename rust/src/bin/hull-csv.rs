@@ -18,8 +18,8 @@ fn main() -> Result<()> {
 
     let cli = Cli::parse();
 
-    let hull = read_csv_file(&cli.csv_path)?;
-    hull.write(out_w)
+    let hulls = Hulls(vec![read_csv_file(&cli.csv_path)?]);
+    hulls.write(out_w)
 }
 
 pub(crate) fn read_csv_file(path: &Path) -> Result<Hull> {
@@ -51,4 +51,4 @@ pub(crate) fn read_csv_file(path: &Path) -> Result<Hull> {
 
 #[path = "../hull.rs"]
 mod hull;
-use hull::Hull;
+use hull::{Hull, Hulls};
