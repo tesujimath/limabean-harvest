@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file. This change
 
 ## [Unreleased]
 
+### Added
+
+- Build uberjar for standalone use #10
+
 [commit log]: https://github.com/tesujimath/limabean-harvest/compare/0.1.1...HEAD
 
 ## [0.1.1] - 2026-02-13

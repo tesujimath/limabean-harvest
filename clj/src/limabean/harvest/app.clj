@@ -70,21 +70,22 @@
   "limabean-harvest entry point after CLI argument processing"
   [import-paths opts]
   (try (logging/initialize)
-       (let [beanfile (:context opts)
-             standalone (:standalone opts)
-             _ (user-clj/load-user-cljs)
-             config (config/build opts)
-             digest
-               (if beanfile (beanfile/digest beanfile) beanfile/EMPTY-DIGEST)
-             harvested (harvest-txns config digest import-paths)]
-         (when (and standalone beanfile)
-           (print (format "include \"%s\"\n\n" beanfile)))
-         (run! #(print (format "%s\n" %))
-               (eduction (format/xf (:output config)) harvested)))
-       (catch clojure.lang.ExceptionInfo e
-         (binding [*out* *err*]
-           (println (error/format-user e))
-           (System/exit 1)))))
+       (binding [*ns* (find-ns 'user)]
+         (let [beanfile (:context opts)
+               standalone (:standalone opts)
+               _ (user-clj/load-user-cljs)
+               config (config/build opts)
+               digest
+                 (if beanfile (beanfile/digest beanfile) beanfile/EMPTY-DIGEST)
+               harvested (harvest-txns config digest import-paths)]
+           (when (and standalone beanfile)
+             (print (format "include \"%s\"\n\n" beanfile)))
+           (run! #(print (format "%s\n" %))
+                 (eduction (format/xf (:output config)) harvested)))
+         (catch clojure.lang.ExceptionInfo e
+           (binding [*out* *err*]
+             (println (error/format-user e))
+             (System/exit 1))))))
 
 (defn version
   "Get the library version from pom.properties, else returns \"unknown\"."
