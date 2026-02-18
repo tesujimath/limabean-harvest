@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file. This change
 
 - Build uberjar for standalone use #10
 - add support for ofx2
+- limabean-harvest -v pretty prints config on stderr
 
 [commit log]: https://github.com/tesujimath/limabean-harvest/compare/0.1.1...HEAD
 

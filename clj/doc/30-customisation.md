@@ -162,3 +162,5 @@ The configuration is defined in EDN, passed on the command line with `--config` 
 - output is deep merged, so individual values may be overridden while keeping the others
 
 See, for example, the [configuration used for the tests](../../test-cases/harvest.edn).
+
+`limabean-harvest -v` pretty prints on standard error the result of merging the default and user configurations.
