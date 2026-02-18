@@ -2,14 +2,14 @@
 
 `limabean-harvest` provides the following features:
 - import from CSV or OFX into Beancount format
-- lookup primary account for import from OFX `acctid` field
-- infer secondary accounts for postings from payees and narrations in existing Beancount file
+- lookup primary account for import from OFX `acctid` field, or infer from filename
+- infer secondary accounts for postings from payees (or narrations) in existing Beancount file
 - construct transaction ID from OFX `acctid` anf `fitid` fields, and reject import of duplicate transactions
 - pair up transactions between accounts where both accounts are imported in the same group
 
 The intention is that both OFX v1 and v2 import is complete and general purpose.  This also works for QFX.
 
-CSV import, however, requires customising for each financial instituion according to the headers they export in CSV.
+CSV import, however, requires customising for each financial instituion according to the headers they export in CSV.  This is essentially just field-mapping.
 
 The import process is governed by configuration in [EDN](https://github.com/edn-format/edn), as in [this example](../../test-cases/harvest.edn).
 
