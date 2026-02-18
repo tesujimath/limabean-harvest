@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file. This change
 
 ## [Unreleased]
 
+[commit log]: https://github.com/tesujimath/limabean-harvest/compare/0.2.0...HEAD
+
+## [0.2.0] - 2026-02-19
+
 ### Changed
 
 - hulling protocol now returns a list rather than a single hull
@@ -10,11 +14,12 @@ All notable changes to this project will be documented in this file. This change
 
 ### Added
 
-- Build uberjar for standalone use #10
-- add support for ofx2
+- build uberjar for standalone use #10
+- add support for OFX v2 (and QFX)
 - limabean-harvest -v pretty prints config on stderr
+- improve docs
 
-[commit log]: https://github.com/tesujimath/limabean-harvest/compare/0.1.1...HEAD
+[commit log]: https://github.com/tesujimath/limabean-harvest/compare/0.1.1...0.2.0
 
 ## [0.1.1] - 2026-02-13
 
