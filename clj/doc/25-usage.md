@@ -7,7 +7,7 @@ It is usable with just the default configuration, and in this case is able to im
 When run, the imported directives are printed on standard output, so redirect that to a file, or append to your beanfile directly.
 
 ```
-kiri> limabean-harvest --config ./test-cases/harvest.edn --context ./test-cases/kiwibank.beancount \
+kiri> limabean-harvest --config ./test-cases/kiwibank/config.edn --context ./test-cases/kiwibank/context.beancount \
         ./test-cases/kiwibank/*.ofx
 
 2025-03-31 txn "INTEREST EARNED" ""
@@ -39,7 +39,7 @@ The Beancount context file is used for various purposes.
 
 Account IDs may occur explicitly in the import file, for example as is the case with OFX.  Otherwise they may be inferred from the import file path, for example as is necessary for CSV, and are made available to the field mapping in the header field `inferred-accid`.
 
-These account IDs must match those in the Beancount context file, which are defined there by means of `accid` metadata strings on `open` directives, as in [this example](../../test-cases/kiwibank.beancount).  Inference from import file path requires a unique match of account ID against the pathname of the import file.
+These account IDs must match those in the Beancount context file, which are defined there by means of `accid` metadata strings on `open` directives, as in [this example](../../test-cases/kiwibank/context.beancount).  Inference from import file path requires a unique match of account ID against the pathname of the import file.
 
 ### Transaction IDs
 
@@ -57,7 +57,7 @@ The result of secondary account inference is a list of postings, which must be h
 Context is extracted as JSON from the Beancount file by `limabean-digest`, and this may be run directly for troubleshooting, for example:
 
 ```
-kiri> limabean-digest ./test-cases/first-direct.beancount | jq
+kiri> limabean-digest ./test-cases/first-direct/context.beancount | jq
 {
   "accids": {
     "10-9999-0000001-02": "Assets:Bank:Uk:Savings",

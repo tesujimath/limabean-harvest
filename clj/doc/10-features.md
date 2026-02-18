@@ -11,7 +11,7 @@ The intention is that both OFX v1 and v2 import is complete and general purpose.
 
 CSV import, however, requires customising for each financial instituion according to the headers they export in CSV.  This is essentially just field-mapping.
 
-The import process is governed by configuration in [EDN](https://github.com/edn-format/edn), as in [this example](../../test-cases/harvest.edn).
+The import process is governed by configuration in [EDN](https://github.com/edn-format/edn), as in [this example](../../test-cases/first-direct/config.edn).
 
 ## Import Phases
 
@@ -52,7 +52,7 @@ When money is moved between accounts, the import file for each account contains 
 
 `limabean-harvest` has heuristics to pair up transactions which are imported in the same group, removing the need for this manual step.
 
-An example of paired transactions may be seen in the [pairing golden test output](../../test-cases/pairing.expected.beancount).  Evidence of pairing is the presence of metadata `txnid2`, `payee2`, and `narration2`, which come from the other side of the paired transaction.
+An example of paired transactions may be seen in the [pairing golden test output](../../test-cases/pairing/expected.beancount).  Evidence of pairing is the presence of metadata `txnid2`, `payee2`, and `narration2`, which come from the other side of the paired transaction.
 
 Pairing requires secondary account inference to have allocated a unique candidate account.
 

@@ -1,8 +1,6 @@
 /.direnv/
 target/
 /steel/
-/*log
+limabean-harvest.log*
 **/tests/**/*.actual.beancount
 /result
-*-log.json
-

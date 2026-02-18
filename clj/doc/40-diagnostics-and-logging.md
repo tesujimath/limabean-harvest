@@ -9,7 +9,7 @@ most recent balance assertion are printed along with the error message.
 
 For example:
 ```
-aya> limabean --ledger examples/beancount/balance.beancount
+aya> limabean --beanfile examples/beancount/balance.beancount
 Error: invalid balance
     ╭─[ examples/beancount/balance.beancount:27:1 ]
  27 │ 2020-02-28 balance Assets:Bank:Current   940.00 NZD
