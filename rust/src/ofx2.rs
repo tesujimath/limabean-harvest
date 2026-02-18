@@ -1,18 +1,12 @@
-use color_eyre::eyre::{eyre, Result};
+use color_eyre::eyre::{Result, WrapErr};
 use serde::Deserialize;
 use std::{collections::HashMap, path::Path};
 
-use crate::hull::Hull;
+use crate::hull::{Hull, Hulls};
 
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "UPPERCASE")]
 struct Document {
-    ofx: Ofx,
-}
-
-#[derive(Deserialize, Debug)]
-#[serde(rename_all = "UPPERCASE")]
-struct Ofx {
     bankmsgsrsv1: Option<BankMsgsRsV1>,
     creditcardmsgsrsv1: Option<CreditCardMsgsRsV1>,
 }
@@ -20,13 +14,13 @@ struct Ofx {
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "UPPERCASE")]
 struct BankMsgsRsV1 {
-    stmttrnrs: Option<StmtTrnRs>,
+    stmttrnrs: Vec<StmtTrnRs>,
 }
 
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "UPPERCASE")]
 struct CreditCardMsgsRsV1 {
-    ccstmttrnrs: Option<CcStmtTrnRs>,
+    ccstmttrnrs: Vec<CcStmtTrnRs>,
 }
 
 #[derive(Deserialize, Debug)]
@@ -103,83 +97,81 @@ struct LedgerBal {
     dtasof: String,
 }
 
-impl From<StmtTrn> for HashMap<String, String> {
-    fn from(value: StmtTrn) -> Self {
+impl From<&StmtTrn> for HashMap<String, String> {
+    fn from(value: &StmtTrn) -> Self {
         [
-            ("trntype", value.trntype),
-            ("dtposted", value.dtposted),
-            ("trnamt", value.trnamt),
-            ("fitid", value.fitid),
+            ("trntype", value.trntype.clone()),
+            ("dtposted", value.dtposted.clone()),
+            ("trnamt", value.trnamt.clone()),
+            ("fitid", value.fitid.clone()),
         ]
         .into_iter()
-        .chain(value.name.into_iter().map(|name| ("name", name)))
-        .chain(value.payee.into_iter().map(|payee| ("payee", payee.name)))
-        .chain(value.memo.into_iter().map(|memo| ("memo", memo)))
+        .chain(value.name.iter().map(|name| ("name", name.clone())))
+        .chain(
+            value
+                .payee
+                .iter()
+                .map(|payee| ("payee", payee.name.clone())),
+        )
+        .chain(value.memo.iter().map(|memo| ("memo", memo.clone())))
         .map(|(k, v)| (k.to_string(), v))
         .collect::<HashMap<_, _>>()
     }
 }
 
-pub(crate) fn parse(path: &Path, ofx2_content: &str) -> Result<Hull> {
-    let doc = quick_xml::de::from_str::<'_, Document>(ofx2_content)?;
+pub(crate) fn parse(path: &Path, ofx2_content: &str) -> Result<Hulls> {
+    let doc = quick_xml::de::from_str::<'_, Document>(ofx2_content)
+        .wrap_err_with(|| format!("Failed to decode OFX2 XML in {}", path.to_string_lossy()))?;
 
-    match doc {
-        Document {
-            ofx:
-                Ofx {
-                    bankmsgsrsv1:
-                        Some(BankMsgsRsV1 {
-                            stmttrnrs:
-                                Some(StmtTrnRs {
-                                    stmtrs:
-                                        Some(StmtRs {
-                                            curdef,
-                                            bankacctfrom: BankAcctFrom { acctid },
-                                            banktranlist: Some(BankTranList { stmttrns }),
-                                            ledgerbal: LedgerBal { balamt, dtasof },
-                                        }),
-                                }),
-                        }),
-                    creditcardmsgsrsv1: None,
-                },
-        } => Ok((curdef, acctid, balamt, dtasof, stmttrns)),
-
-        Document {
-            ofx:
-                Ofx {
-                    bankmsgsrsv1: None,
-                    creditcardmsgsrsv1:
-                        Some(CreditCardMsgsRsV1 {
-                            ccstmttrnrs:
-                                Some(CcStmtTrnRs {
-                                    ccstmtrs:
-                                        Some(CcStmtRs {
-                                            curdef,
-                                            ccacctfrom: CcAcctFrom { acctid },
-                                            banktranlist: Some(BankTranList { stmttrns }),
-                                            ledgerbal: LedgerBal { balamt, dtasof },
-                                        }),
-                                }),
-                        }),
-                },
-        } => Ok((curdef, acctid, balamt, dtasof, stmttrns)),
-
-        _ => Err(eyre!("unsupported OFX2 document {:?} {:?}", path, &doc)),
-    }
-    .map(|(curdef, acctid, balamt, dtasof, stmttrns)| Hull {
-        hdr: [
-            ("dialect", "ofx2".to_string()),
-            ("curdef", curdef),
-            ("acctid", acctid),
-            ("balamt", balamt),
-            ("dtasof", dtasof),
-        ]
-        .into_iter()
-        .map(|(k, v)| (k.to_string(), v))
-        .collect::<HashMap<_, _>>(),
-        txns: stmttrns
+    let hulls = doc
+        .bankmsgsrsv1
+        .iter()
+        .flat_map(|bankmsgsrsv1| {
+            bankmsgsrsv1.stmttrnrs.iter().flat_map(|stmttrnrs| {
+                stmttrnrs.stmtrs.iter().map(|stmtrs| {
+                    (
+                        &stmtrs.curdef,
+                        &stmtrs.bankacctfrom.acctid,
+                        stmtrs.banktranlist.as_ref(),
+                        &stmtrs.ledgerbal,
+                    )
+                })
+            })
+        })
+        .chain(doc.creditcardmsgsrsv1.iter().flat_map(|ccstmttrnrs| {
+            ccstmttrnrs.ccstmttrnrs.iter().flat_map(|ccstmttrnrs| {
+                ccstmttrnrs.ccstmtrs.iter().map(|ccstmtrs| {
+                    (
+                        &ccstmtrs.curdef,
+                        &ccstmtrs.ccacctfrom.acctid,
+                        ccstmtrs.banktranlist.as_ref(),
+                        &ccstmtrs.ledgerbal,
+                    )
+                })
+            })
+        }))
+        .map(|(curdef, acctid, banktranlist, ledgerbal)| Hull {
+            hdr: [
+                ("dialect", "ofx2".to_string()),
+                ("curdef", curdef.clone()),
+                ("acctid", acctid.clone()),
+                ("balamt", ledgerbal.balamt.clone()),
+                ("dtasof", ledgerbal.dtasof.clone()),
+            ]
             .into_iter()
-            .map(Into::<HashMap<_, _>>::into)
-            .collect::<Vec<_>>(),
-    })
+            .map(|(k, v)| (k.to_string(), v))
+            .collect::<HashMap<_, _>>(),
+            txns: banktranlist
+                .iter()
+                .flat_map(|banktranlist| {
+                    banktranlist
+                        .stmttrns
+                        .iter()
+                        .map(Into::<HashMap<_, _>>::into)
+                })
+                .collect::<Vec<_>>(),
+        })
+        .collect::<Vec<_>>();
+
+    Ok(Hulls(hulls))
 }

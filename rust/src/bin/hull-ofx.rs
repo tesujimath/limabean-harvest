@@ -21,11 +21,11 @@ fn main() -> Result<()> {
 
     let cli = Cli::parse();
 
-    let hulls = Hulls(vec![read_ofx_file(&cli.ofx_path)?]);
+    let hulls = read_ofx_file(&cli.ofx_path)?;
     hulls.write(out_w)
 }
 
-pub(crate) fn read_ofx_file(path: &Path) -> Result<Hull> {
+pub(crate) fn read_ofx_file(path: &Path) -> Result<Hulls> {
     let content = read_to_string(path)
         .wrap_err_with(|| format!("Failed to read {}", path.to_string_lossy()))?;
     if let Some(first_line) = content.lines().next() && first_line.trim() == "OFXHEADER:100" {
@@ -43,7 +43,7 @@ pub(crate) fn read_ofx_file(path: &Path) -> Result<Hull> {
 
 #[path = "../hull.rs"]
 mod hull;
-use hull::{Hull, Hulls};
+use hull::Hulls;
 
 #[path = "../ofx1.rs"]
 mod ofx1;
