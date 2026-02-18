@@ -1,8 +1,12 @@
-use color_eyre::eyre::{eyre, Result};
+use color_eyre::eyre::{Result, WrapErr, eyre};
 use serde::Deserialize;
 use std::{collections::HashMap, path::Path};
 
-use crate::hull::Hull;
+use super::{
+    ACCTID, BALAMT, CURDEF, DIALECT, DTASOF, DTPOSTED, FITID, MEMO, NAME, TRNAMT, TRNTYPE,
+    truncate_yyyymmdd,
+};
+use crate::hull::{Hull, Hulls};
 
 #[derive(Deserialize, Debug)]
 struct Document {
@@ -81,12 +85,12 @@ struct LedgerBal {
 impl From<StmtTrn> for HashMap<String, String> {
     fn from(value: StmtTrn) -> Self {
         [
-            ("trntype", value.trntype),
-            ("dtposted", value.dtposted),
-            ("trnamt", value.trnamt),
-            ("fitid", value.fitid),
-            ("name", value.name),
-            ("memo", value.memo),
+            (TRNTYPE, value.trntype),
+            (DTPOSTED, truncate_yyyymmdd(value.dtposted)),
+            (TRNAMT, value.trnamt),
+            (FITID, value.fitid),
+            (NAME, value.name),
+            (MEMO, value.memo),
         ]
         .into_iter()
         .map(|(k, v)| (k.to_string(), v))
@@ -94,7 +98,7 @@ impl From<StmtTrn> for HashMap<String, String> {
     }
 }
 
-pub(crate) fn parse(path: &Path, ofx_content: &str) -> Result<Hull> {
+pub(crate) fn parse(path: &Path, ofx_content: &str) -> Result<Hulls> {
     let sgml = sgmlish::Parser::builder()
         .lowercase_names()
         .expand_entities(|entity| match entity {
@@ -104,11 +108,18 @@ pub(crate) fn parse(path: &Path, ofx_content: &str) -> Result<Hull> {
             "nbsp" => Some(" "),
             _ => None,
         })
-        .parse(ofx_content)?;
-    let sgml = sgmlish::transforms::normalize_end_tags(sgml)?;
-    let doc = sgmlish::from_fragment::<Document>(sgml)?;
+        .parse(ofx_content)
+        .wrap_err_with(|| format!("Failed to parse OFX1 in {}", path.to_string_lossy()))?;
+    let sgml = sgmlish::transforms::normalize_end_tags(sgml).wrap_err_with(|| {
+        format!(
+            "Failed to normalize OFX1 end tags in {}",
+            path.to_string_lossy()
+        )
+    })?;
+    let doc = sgmlish::from_fragment::<Document>(sgml)
+        .wrap_err_with(|| format!("Failed to deserialize OFX1 in {}", path.to_string_lossy()))?;
 
-    match doc {
+    let hull = match doc {
         Document {
             bankmsgsrsv1:
                 Some(BankMsgsRsV1 {
@@ -147,11 +158,11 @@ pub(crate) fn parse(path: &Path, ofx_content: &str) -> Result<Hull> {
     }
     .map(|(curdef, acctid, balamt, dtasof, stmttrns)| Hull {
         hdr: [
-            ("dialect", "ofx1".to_string()),
-            ("curdef", curdef),
-            ("acctid", acctid),
-            ("balamt", balamt),
-            ("dtasof", dtasof),
+            (DIALECT, "ofx1".to_string()),
+            (CURDEF, curdef),
+            (ACCTID, acctid),
+            (BALAMT, balamt),
+            (DTASOF, truncate_yyyymmdd(dtasof)),
         ]
         .into_iter()
         .map(|(k, v)| (k.to_string(), v))
@@ -160,5 +171,7 @@ pub(crate) fn parse(path: &Path, ofx_content: &str) -> Result<Hull> {
             .into_iter()
             .map(Into::<HashMap<_, _>>::into)
             .collect::<Vec<_>>(),
-    })
+    })?;
+
+    Ok(Hulls(vec![hull]))
 }

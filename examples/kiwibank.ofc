@@ -1,0 +1,168 @@
+<OFC>
+  <DTD>2
+  <CPAGE>1252
+  <ACCTSTMT>
+    <ACCTFROM>
+      <BANKID>Download
+      <ACCTID>99-1234-1234567-23
+      <ACCTTYPE>1
+    </ACCTFROM>
+    <STMTRS>
+      <DTSTART>20240218
+      <DTEND>20260217
+      <LEDGER>15.71
+            <STMTTRN>
+        <TRNTYPE>0		
+        <DTPOSTED>20240320		
+        <TRNAMT>30.00
+        <FITID>20Mar2024.1
+        <NAME>TRANSFER FROM B BRUSH - 07 
+        <MEMO>TRANSFER FROM B BRUSH - 07 ;
+      </STMTTRN>
+            <STMTTRN>
+        <TRNTYPE>0		
+        <DTPOSTED>20240320		
+        <TRNAMT>4.00
+        <FITID>20Mar2024.2
+        <NAME>TRANSFER FROM B BRUSH - 07 
+        <MEMO>TRANSFER FROM B BRUSH - 07 ;
+      </STMTTRN>
+            <STMTTRN>
+        <TRNTYPE>0		
+        <DTPOSTED>20240320		
+        <TRNAMT>-35.43
+        <FITID>20Mar2024.3
+        <NAME>www.aliexpress.com WWW.ALIEXPRES
+        <MEMO>www.aliexpress.com WWW.ALIEXPRES ;
+      </STMTTRN>
+            <STMTTRN>
+        <TRNTYPE>0		
+        <DTPOSTED>20241221		
+        <TRNAMT>90.00
+        <FITID>21Dec2024.1
+        <NAME>TRANSFER FROM B BRUSH - 07 
+        <MEMO>TRANSFER FROM B BRUSH - 07 ;
+      </STMTTRN>
+            <STMTTRN>
+        <TRNTYPE>0		
+        <DTPOSTED>20241221		
+        <TRNAMT>10.00
+        <FITID>21Dec2024.2
+        <NAME>TRANSFER FROM B BRUSH - 07 
+        <MEMO>TRANSFER FROM B BRUSH - 07 ;
+      </STMTTRN>
+            <STMTTRN>
+        <TRNTYPE>0		
+        <DTPOSTED>20241222		
+        <TRNAMT>-89.68
+        <FITID>22Dec2024.1
+        <NAME>www.aliexpress.com WWW.ALIEXPRES
+        <MEMO>www.aliexpress.com WWW.ALIEXPRES ;
+      </STMTTRN>
+            <STMTTRN>
+        <TRNTYPE>0		
+        <DTPOSTED>20241223		
+        <TRNAMT>-10.00
+        <FITID>23Dec2024.1
+        <NAME>VisaDebitAnnualFee *1234 
+        <MEMO>VisaDebitAnnualFee *1234 ;
+      </STMTTRN>
+            <STMTTRN>
+        <TRNTYPE>0		
+        <DTPOSTED>20250609		
+        <TRNAMT>100.00
+        <FITID>09Jun2025.1
+        <NAME>TRANSFER FROM B BRUSH - 07 
+        <MEMO>TRANSFER FROM B BRUSH - 07 ;
+      </STMTTRN>
+            <STMTTRN>
+        <TRNTYPE>0		
+        <DTPOSTED>20250619		
+        <TRNAMT>50.00
+        <FITID>19Jun2025.1
+        <NAME>TRANSFER FROM B BRUSH - 07 
+        <MEMO>TRANSFER FROM B BRUSH - 07 ;
+      </STMTTRN>
+            <STMTTRN>
+        <TRNTYPE>0		
+        <DTPOSTED>20250619		
+        <TRNAMT>-131.00
+        <FITID>19Jun2025.2
+        <NAME>SP CUSTOM AMP COVERS BESTAMPCOVE
+        <MEMO>SP CUSTOM AMP COVERS BESTAMPCOVERSDE ;
+      </STMTTRN>
+            <STMTTRN>
+        <TRNTYPE>0		
+        <DTPOSTED>20250621		
+        <TRNAMT>80.00
+        <FITID>21Jun2025.1
+        <NAME>TRANSFER FROM B BRUSH - 07 
+        <MEMO>TRANSFER FROM B BRUSH - 07 ;
+      </STMTTRN>
+            <STMTTRN>
+        <TRNTYPE>0		
+        <DTPOSTED>20250622		
+        <TRNAMT>-60.00
+        <FITID>22Jun2025.1
+        <NAME>MOANA POOL DUNEDIN 
+        <MEMO>MOANA POOL DUNEDIN ;
+      </STMTTRN>
+            <STMTTRN>
+        <TRNTYPE>0		
+        <DTPOSTED>20250816		
+        <TRNAMT>-5.30
+        <FITID>16Aug2025.1
+        <NAME>WANAKA SPORTS
+        <MEMO>POS W/D WANAKA SPORTS-11:19 ;
+      </STMTTRN>
+            <STMTTRN>
+        <TRNTYPE>0		
+        <DTPOSTED>20251006		
+        <TRNAMT>60.00
+        <FITID>06Oct2025.1
+        <NAME>TRANSFER FROM B BRUSH - 07 
+        <MEMO>TRANSFER FROM B BRUSH - 07 ;
+      </STMTTRN>
+            <STMTTRN>
+        <TRNTYPE>0		
+        <DTPOSTED>20251007		
+        <TRNAMT>-90.10
+        <FITID>07Oct2025.1
+        <NAME>MOANA POOL DUNEDIN 
+        <MEMO>MOANA POOL DUNEDIN ;
+      </STMTTRN>
+            <STMTTRN>
+        <TRNTYPE>0		
+        <DTPOSTED>20251113		
+        <TRNAMT>205.87
+        <FITID>13Nov2025.1
+        <NAME>TRANSFER FROM B BRUSH - 07 
+        <MEMO>TRANSFER FROM B BRUSH - 07 ;
+      </STMTTRN>
+            <STMTTRN>
+        <TRNTYPE>0		
+        <DTPOSTED>20251114		
+        <TRNAMT>-205.87
+        <FITID>14Nov2025.1
+        <NAME>UBERTEC (OLD) AUCKLAND 
+        <MEMO>UBERTEC (OLD) AUCKLAND ;
+      </STMTTRN>
+            <STMTTRN>
+        <TRNTYPE>0		
+        <DTPOSTED>20260119		
+        <TRNAMT>20.00
+        <FITID>19Jan2026.1
+        <NAME>TRANSFER FROM B BRUSH - 07 
+        <MEMO>TRANSFER FROM B BRUSH - 07 ;
+      </STMTTRN>
+            <STMTTRN>
+        <TRNTYPE>0		
+        <DTPOSTED>20260120		
+        <TRNAMT>-9.20
+        <FITID>20Jan2026.1
+        <NAME>ST CLAIR SALT POOL DUNEDIN 
+        <MEMO>ST CLAIR SALT POOL DUNEDIN ;
+      </STMTTRN>
+       </STMTRS>
+  </ACCTSTMT>
+</OFC>

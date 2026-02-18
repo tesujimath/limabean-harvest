@@ -1,8 +1,26 @@
 use clap::Parser;
-use color_eyre::eyre::{eyre, Context, Result};
+use color_eyre::eyre::{Context, Result, eyre};
 use regex::Regex;
 use std::path::PathBuf;
-use std::{fs::read_to_string, path::Path};
+use std::{fs::read_to_string, path::Path, sync::LazyLock};
+
+const ACCTID: &str = "acctid";
+const BALAMT: &str = "balamt";
+const CURDEF: &str = "curdef";
+const DIALECT: &str = "dialect";
+const DTASOF: &str = "dtasof";
+const DTPOSTED: &str = "dtposted";
+const FITID: &str = "fitid";
+const MEMO: &str = "memo";
+const NAME: &str = "name";
+const PAYEE: &str = "payee";
+const TRNAMT: &str = "trnamt";
+const TRNTYPE: &str = "trntype";
+
+static BLANK_LINE_RE: LazyLock<Regex> = LazyLock::new(|| Regex::new("\r\n\\s*\r\n").unwrap());
+
+static OFX2_HEADER_RE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r#"<\?xml[^>]*\?>\s*<\?OFX\s+OFXHEADER="200""#).unwrap());
 
 #[derive(Parser)]
 #[command(version, about = "Hull an OFX file for import into limabean-harvest", long_about = None)]
@@ -16,33 +34,43 @@ fn main() -> Result<()> {
 
     let cli = Cli::parse();
 
-    let hull = read_ofx_file(&cli.ofx_path)?;
-    hull.write(out_w)
+    let hulls = read_ofx_file(&cli.ofx_path)?;
+    hulls.write(out_w)
 }
 
-pub(crate) fn read_ofx_file(path: &Path) -> Result<Hull> {
-    let ofx_content = read_to_string(path)
+pub(crate) fn read_ofx_file(path: &Path) -> Result<Hulls> {
+    let content = read_to_string(path)
         .wrap_err_with(|| format!("Failed to read {}", path.to_string_lossy()))?;
-    let first_line = ofx_content.lines().next();
-    if let Some(first_line) = first_line {
-        if first_line.trim() == "OFXHEADER:100" {
-            let blank_line = Regex::new("\r\n\\s*\r\n").unwrap();
-            if let Some(m) = blank_line.find(&ofx_content) {
-                ofx1::parse(path, &ofx_content[m.end()..])
-            } else {
-                Err(eyre!("failed to find end of OFX1 header in {:?}", path))
-            }
+    if let Some(first_line) = content.lines().next()
+        && first_line.trim() == "OFXHEADER:100"
+    {
+        if let Some(m) = BLANK_LINE_RE.find(&content) {
+            ofx1::parse(path, &content[m.end()..])
         } else {
-            Err(eyre!("OFX2 not supported"))
+            Err(eyre!("failed to find end of OFX1 header in {:?}", path))
         }
+    } else if OFX2_HEADER_RE.is_match(&content) {
+        ofx2::parse(path, &content)
     } else {
-        Err(eyre!("failed to read first line in {:?}", path))
+        Err(eyre!("unrecognised file content in {:?}", path))
+    }
+}
+
+fn truncate_yyyymmdd(s: String) -> String {
+    const MAXLEN: usize = 8;
+    if s.len() > MAXLEN {
+        s[..MAXLEN].to_string()
+    } else {
+        s
     }
 }
 
 #[path = "../hull.rs"]
 mod hull;
-use hull::Hull;
+use hull::Hulls;
 
 #[path = "../ofx1.rs"]
 mod ofx1;
+
+#[path = "../ofx2.rs"]
+mod ofx2;

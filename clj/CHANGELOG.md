@@ -3,9 +3,15 @@ All notable changes to this project will be documented in this file. This change
 
 ## [Unreleased]
 
+### Changed
+
+- hulling protocol now returns a list rather than a single hull
+- hull-ofx truncates date/time to yyyyMMdd
+
 ### Added
 
 - Build uberjar for standalone use #10
+- add support for ofx2
 
 [commit log]: https://github.com/tesujimath/limabean-harvest/compare/0.1.1...HEAD
 

@@ -9,7 +9,11 @@ pub struct Hull {
     pub txns: Vec<HashMap<String, String>>,
 }
 
-impl Hull {
+#[derive(Serialize, Debug)]
+#[serde(rename_all = "kebab-case")]
+pub struct Hulls(pub Vec<Hull>);
+
+impl Hulls {
     pub(crate) fn write<W>(&self, out_w: W) -> Result<()>
     where
         W: std::io::Write + Copy,

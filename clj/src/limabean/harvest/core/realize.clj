@@ -3,7 +3,7 @@
             [java-time.api :as jt]
             [limabean.harvest.core.correlation :as correlation]))
 
-(defn realize-field
+(defn- realize-field
   "Realize a field with the already-validated realizer"
   [hdr txn r ctx]
   (cond (string? r) r
@@ -18,9 +18,12 @@
                      nil v-raw))
         (vector? r) (str/join "" (map #(realize-field hdr txn % ctx) r))))
 
-(defn thread-fns "Thread x through fns" [x fns] (reduce (fn [v f] (f v)) x fns))
+(defn- thread-fns
+  "Thread x through fns"
+  [x fns]
+  (reduce (fn [v f] (f v)) x fns))
 
-(defn realize-txn
+(defn- realize-txn
   "Realize the transaction, threading the realized value through the txn-fns, if any."
   [realizer txn-fns hdr txn ctx]
   (-> (into {}
@@ -36,7 +39,7 @@
   (map (fn [txn]
          (realize-txn (:txn realizer) (:txn-fns realizer) hdr txn ctx))))
 
-(defn realize-bal
+(defn- realize-bal
   "Realize the balance, and if bal-fn is defined, apply that after the event."
   [realizer bal-fns hdr txn ctx]
   (-> (into {}
@@ -46,7 +49,7 @@
       (correlation/with-id-from txn)
       (assoc :dct :bal)))
 
-(defn max-by-date [x1 x2] (if (jt/after? (:date x1) (:date x2)) x1 x2))
+(defn- max-by-date [x1 x2] (if (jt/after? (:date x1) (:date x2)) x1 x2))
 
 (defn bal-xf
   "Transducer to realize just the most recent balance, if any"
