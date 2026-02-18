@@ -1,7 +1,7 @@
 {:classifiers [{:hdr {:dialect "kiwibank.ofx1"},
                 :id :kiwibank-ofx1,
                 :ingester ["hull-ofx" :path],
-                :selector {:path-glob "**kiwibank/*.ofx"}}],
+                :selector {:path-glob "**kiwibank*/*.ofx"}}],
  :realizers
    [{:base :generic-ofx1,
      :id :kiwibank-ofx1,
