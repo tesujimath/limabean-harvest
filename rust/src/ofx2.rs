@@ -2,6 +2,9 @@ use color_eyre::eyre::{Result, WrapErr};
 use serde::Deserialize;
 use std::{collections::HashMap, path::Path};
 
+use super::{
+    ACCTID, BALAMT, CURDEF, DIALECT, DTASOF, DTPOSTED, FITID, MEMO, NAME, PAYEE, TRNAMT, TRNTYPE,
+};
 use crate::hull::{Hull, Hulls};
 
 #[derive(Deserialize, Debug)]
@@ -100,20 +103,15 @@ struct LedgerBal {
 impl From<&StmtTrn> for HashMap<String, String> {
     fn from(value: &StmtTrn) -> Self {
         [
-            ("trntype", value.trntype.clone()),
-            ("dtposted", value.dtposted.clone()),
-            ("trnamt", value.trnamt.clone()),
-            ("fitid", value.fitid.clone()),
+            (TRNTYPE, value.trntype.clone()),
+            (DTPOSTED, value.dtposted.clone()),
+            (TRNAMT, value.trnamt.clone()),
+            (FITID, value.fitid.clone()),
         ]
         .into_iter()
-        .chain(value.name.iter().map(|name| ("name", name.clone())))
-        .chain(
-            value
-                .payee
-                .iter()
-                .map(|payee| ("payee", payee.name.clone())),
-        )
-        .chain(value.memo.iter().map(|memo| ("memo", memo.clone())))
+        .chain(value.name.iter().map(|name| (NAME, name.clone())))
+        .chain(value.payee.iter().map(|payee| (PAYEE, payee.name.clone())))
+        .chain(value.memo.iter().map(|memo| (MEMO, memo.clone())))
         .map(|(k, v)| (k.to_string(), v))
         .collect::<HashMap<_, _>>()
     }
@@ -152,11 +150,11 @@ pub(crate) fn parse(path: &Path, ofx2_content: &str) -> Result<Hulls> {
         }))
         .map(|(curdef, acctid, banktranlist, ledgerbal)| Hull {
             hdr: [
-                ("dialect", "ofx2".to_string()),
-                ("curdef", curdef.clone()),
-                ("acctid", acctid.clone()),
-                ("balamt", ledgerbal.balamt.clone()),
-                ("dtasof", ledgerbal.dtasof.clone()),
+                (DIALECT, "ofx2".to_string()),
+                (CURDEF, curdef.clone()),
+                (ACCTID, acctid.clone()),
+                (BALAMT, ledgerbal.balamt.clone()),
+                (DTASOF, ledgerbal.dtasof.clone()),
             ]
             .into_iter()
             .map(|(k, v)| (k.to_string(), v))

@@ -1,7 +1,10 @@
-use color_eyre::eyre::{eyre, Result, WrapErr};
+use color_eyre::eyre::{Result, WrapErr, eyre};
 use serde::Deserialize;
 use std::{collections::HashMap, path::Path};
 
+use super::{
+    ACCTID, BALAMT, CURDEF, DIALECT, DTASOF, DTPOSTED, FITID, MEMO, NAME, TRNAMT, TRNTYPE,
+};
 use crate::hull::{Hull, Hulls};
 
 #[derive(Deserialize, Debug)]
@@ -81,12 +84,12 @@ struct LedgerBal {
 impl From<StmtTrn> for HashMap<String, String> {
     fn from(value: StmtTrn) -> Self {
         [
-            ("trntype", value.trntype),
-            ("dtposted", value.dtposted),
-            ("trnamt", value.trnamt),
-            ("fitid", value.fitid),
-            ("name", value.name),
-            ("memo", value.memo),
+            (TRNTYPE, value.trntype),
+            (DTPOSTED, value.dtposted),
+            (TRNAMT, value.trnamt),
+            (FITID, value.fitid),
+            (NAME, value.name),
+            (MEMO, value.memo),
         ]
         .into_iter()
         .map(|(k, v)| (k.to_string(), v))
@@ -154,11 +157,11 @@ pub(crate) fn parse(path: &Path, ofx_content: &str) -> Result<Hulls> {
     }
     .map(|(curdef, acctid, balamt, dtasof, stmttrns)| Hull {
         hdr: [
-            ("dialect", "ofx1".to_string()),
-            ("curdef", curdef),
-            ("acctid", acctid),
-            ("balamt", balamt),
-            ("dtasof", dtasof),
+            (DIALECT, "ofx1".to_string()),
+            (CURDEF, curdef),
+            (ACCTID, acctid),
+            (BALAMT, balamt),
+            (DTASOF, dtasof),
         ]
         .into_iter()
         .map(|(k, v)| (k.to_string(), v))
