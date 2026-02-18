@@ -1,7 +1,7 @@
 {:classifiers [{:hdr {:cur "GBP", :dialect "first-direct.csv"},
                 :id :first-direct-csv,
                 :ingester ["hull-csv" :path],
-                :selector {:path-glob "**first-direct/**.csv"}}],
+                :selector {:path-glob "**first-direct*/*.csv"}}],
  :realizers
    [{:bal {:accid {:key :inferred-accid, :src :hdr},
            :cur {:key :cur, :src :hdr},
