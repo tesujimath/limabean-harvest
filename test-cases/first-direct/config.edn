@@ -15,4 +15,4 @@
            :date {:fmt "dd/MM/yyyy", :key :date, :src :txn, :type :date},
            :description {:key :description, :src :txn},
            :units {:key :amount, :src :txn, :type :decimal}},
-     :txn-fns [limabean.harvest.api.contrib.first-direct/payee-narration]}]}
+     :txn-fns [limabean.harvest.api.contrib.first-direct-csv/payee-narration]}]}

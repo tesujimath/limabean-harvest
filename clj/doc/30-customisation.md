@@ -120,7 +120,7 @@ A generic CSV realizer is not possible, and therefore realizers for CSV format a
         :date {:src :txn, :key :date, :type :date, :fmt "dd/MM/yyyy"},
         :description {:src :txn, :key :description},
         :units {:src :txn, :key :amount, :type :decimal}},
-  :txn-fns [limabean.harvest.api.contrib.first-direct/payee-narration]
+  :txn-fns [limabean.harvest.api.contrib.first-direct-csv/payee-narration]
 }
 ```
 
