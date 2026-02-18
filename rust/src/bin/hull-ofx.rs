@@ -56,6 +56,15 @@ pub(crate) fn read_ofx_file(path: &Path) -> Result<Hulls> {
     }
 }
 
+fn truncate_yyyymmdd(s: String) -> String {
+    const MAXLEN: usize = 8;
+    if s.len() > MAXLEN {
+        s[..MAXLEN].to_string()
+    } else {
+        s
+    }
+}
+
 #[path = "../hull.rs"]
 mod hull;
 use hull::Hulls;

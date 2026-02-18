@@ -1,0 +1,22 @@
+2025-05-14 txn "NEW WORLD PORIRUA PORIRUA" "BASIL BRUSH-99876"
+  txnid: "A3BC8DE99FGHIJK|12345.XY123450002000010024387"
+  Liabilities:Credit-Card:Amex                                           -11.37 NZD
+  Expenses:Groceries                    ; inferred from 1 payee
+
+2025-05-14 txn "WELLINGTON CITY NEW WOR WELLINGT" "BASIL BRUSH-99876"
+  txnid: "A3BC8DE99FGHIJK|12345.XY123450002000010030135"
+  Liabilities:Credit-Card:Amex                                            -6.99 NZD
+  Expenses:Unknown
+
+2025-05-16 txn "TA PAK N SAVE PORIRUA PORIRUA" "BASIL BRUSH-99876"
+  txnid: "A3BC8DE99FGHIJK|12345.XY123470002000010031651"
+  Liabilities:Credit-Card:Amex                                           -56.29 NZD
+  Expenses:Groceries                    ; inferred from 1 payee
+
+2025-05-17 txn "SPOTIFY STOCKHOLM" "BASIL BRUSH-99876"
+  txnid: "A3BC8DE99FGHIJK|12345.XY123470002000010015864"
+  Liabilities:Credit-Card:Amex                                           -25.49 NZD
+  Expenses:Spotify                      ; inferred from 1 payee
+
+2025-05-18 balance Liabilities:Credit-Card:Amex                        -1091.82 NZD
+

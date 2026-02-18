@@ -4,6 +4,7 @@ use std::{collections::HashMap, path::Path};
 
 use super::{
     ACCTID, BALAMT, CURDEF, DIALECT, DTASOF, DTPOSTED, FITID, MEMO, NAME, PAYEE, TRNAMT, TRNTYPE,
+    truncate_yyyymmdd,
 };
 use crate::hull::{Hull, Hulls};
 
@@ -104,7 +105,7 @@ impl From<&StmtTrn> for HashMap<String, String> {
     fn from(value: &StmtTrn) -> Self {
         [
             (TRNTYPE, value.trntype.clone()),
-            (DTPOSTED, value.dtposted.clone()),
+            (DTPOSTED, truncate_yyyymmdd(value.dtposted.clone())),
             (TRNAMT, value.trnamt.clone()),
             (FITID, value.fitid.clone()),
         ]
@@ -154,7 +155,7 @@ pub(crate) fn parse(path: &Path, ofx2_content: &str) -> Result<Hulls> {
                 (CURDEF, curdef.clone()),
                 (ACCTID, acctid.clone()),
                 (BALAMT, ledgerbal.balamt.clone()),
-                (DTASOF, ledgerbal.dtasof.clone()),
+                (DTASOF, truncate_yyyymmdd(ledgerbal.dtasof.clone())),
             ]
             .into_iter()
             .map(|(k, v)| (k.to_string(), v))

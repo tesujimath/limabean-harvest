@@ -9,7 +9,7 @@
   "Return the classifier if selected, augmented with path and meta data"
   [classifier import-path]
   (if-let [path-glob (get-in classifier [:selector :path-glob])]
-    (and (glob/match? path-glob import-path)
+    (and (glob/match? path-glob (str/lower-case import-path))
          (merge classifier
                 {:path import-path,
                  :meta {:path import-path, :classifier (:id classifier)}}))

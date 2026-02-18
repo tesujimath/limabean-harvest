@@ -1,0 +1,20 @@
+2016-03-01 open Assets:Bank:Current
+
+2016-03-01 open Liabilities:Credit-Card:Amex
+  accid: "A3BC8DE99FGHIJK|12345"
+
+2016-03-01 open Expenses:Groceries
+
+2016-03-01 open Expenses:Spotify
+
+2020-01-01 txn "SPOTIFY STOCKHOLM" ""
+  Assets:Bank:Current   -25.49 NZD
+  Expenses:Spotify
+
+2025-01-01 txn "TA PAK N SAVE PORIRUA PORIRUA" ""
+  Assets:Bank:Current  -101.50 NZD
+  Expenses:Groceries
+
+2025-01-01 txn "NEW WORLD PORIRUA PORIRUA" ""
+  Assets:Bank:Current   -33.50 NZD
+  Expenses:Groceries

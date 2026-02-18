@@ -4,6 +4,7 @@ use std::{collections::HashMap, path::Path};
 
 use super::{
     ACCTID, BALAMT, CURDEF, DIALECT, DTASOF, DTPOSTED, FITID, MEMO, NAME, TRNAMT, TRNTYPE,
+    truncate_yyyymmdd,
 };
 use crate::hull::{Hull, Hulls};
 
@@ -85,7 +86,7 @@ impl From<StmtTrn> for HashMap<String, String> {
     fn from(value: StmtTrn) -> Self {
         [
             (TRNTYPE, value.trntype),
-            (DTPOSTED, value.dtposted),
+            (DTPOSTED, truncate_yyyymmdd(value.dtposted)),
             (TRNAMT, value.trnamt),
             (FITID, value.fitid),
             (NAME, value.name),
@@ -161,7 +162,7 @@ pub(crate) fn parse(path: &Path, ofx_content: &str) -> Result<Hulls> {
             (CURDEF, curdef),
             (ACCTID, acctid),
             (BALAMT, balamt),
-            (DTASOF, dtasof),
+            (DTASOF, truncate_yyyymmdd(dtasof)),
         ]
         .into_iter()
         .map(|(k, v)| (k.to_string(), v))

@@ -1,0 +1,12 @@
+2005-10-04 txn
+  txnid: "999988.00002"
+  Assets:Bank:Current                                                   -200.00 USD
+  Expenses:Unknown
+
+2005-10-20 txn
+  txnid: "999988.00003"
+  Assets:Bank:Current                                                   -300.00 USD
+  Expenses:Unknown
+
+2005-10-30 balance Assets:Bank:Current                                   200.29 USD
+

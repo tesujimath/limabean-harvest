@@ -29,6 +29,8 @@ Selection of which hulling program to run and how is called classification, and 
 }
 ```
 
+The import path is lower-cased before globbing against the selectors.
+
 `:id` simply identifies the classifier.
 
 `:selector` is what triggers this classifier to be selected.
