@@ -153,8 +153,6 @@ used like this in the EDN config file:
 }
 ```
 
-The intention is that institution-specific realizer functions are collected in [API contrib](../src/limabean/harvest/api/contrib).  PRs for additions here are always welcome, but please add a test for each, as is done in the [existing test cases](../../test-cases).
-
 ## Configuration
 
 The configuration is defined in EDN, passed on the command line with `--config` or via the environment variable `LIMABEAN_HARVEST_CONFIG` (with the command line flag taking priority), and is merged with the [default configuration](../src/limabean/harvest/core/config.clj) in the following way:
