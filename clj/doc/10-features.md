@@ -11,7 +11,7 @@ The intention is that both OFX v1 and v2 import is complete and general purpose.
 
 CSV import, however, requires customising for each financial instituion according to the headers they export in CSV.  This is essentially just field-mapping.
 
-The import process is governed by configuration in [EDN](https://github.com/edn-format/edn), as in [this example](../../test-cases/first-direct/config.edn).
+The import process is governed by configuration in [EDN](https://github.com/edn-format/edn), as in [this example](../../test-cases/first-direct-csv/config.edn).
 
 ## Import Phases
 
