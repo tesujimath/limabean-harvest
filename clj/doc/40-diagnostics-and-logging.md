@@ -24,3 +24,55 @@ Error: invalid balance
 ## Logging
 
 If the environment variable `LIMABEAN_HARVEST_LOG` is defined, that will accumulate JSON format structured logging, best viewed with a JSON log viewer such as [hl](https://github.com/pamburus/hl).
+
+## Troubleshooting hulling
+
+Hulling programs may also be run directly.  For example:
+
+```
+kiri> hull-ofx ./test-cases/kiwibank/kiwibank.ofx | jq
+[
+  {
+    "hdr": {
+      "acctid": "99-1234-0123456-07",
+      "dtasof": "20250412",
+      "dialect": "ofx1",
+      "balamt": "150.42",
+      "curdef": "NZD"
+    },
+    "txns": [
+      {
+        "memo": "INTEREST EARNED ;",
+        "dtposted": "20250331",
+        "trntype": "CREDIT",
+        "fitid": "31Mar2025.1",
+        "name": "INTEREST EARNED",
+        "trnamt": "4.72"
+      },
+      {
+        "trnamt": "-10.00",
+        "trntype": "DEBIT",
+        "memo": "WIKIMEDIA 877-600-9454 ;",
+        "name": "WIKIMEDIA 877-600-9454",
+        "dtposted": "20250331",
+        "fitid": "31Mar2025.2"
+      }
+    ]
+  }
+]
+
+kiri> hull-csv ./test-cases/first-direct/10-9999-0000001-02.csv | jq
+[
+  {
+    "hdr": {},
+    "txns": [
+      {
+        "date": "10/02/2025",
+        "description": "TRANSFER FROM CURRENT",
+        "amount": "34.28",
+        "balance": "134.28"
+      }
+    ]
+  }
+]
+```

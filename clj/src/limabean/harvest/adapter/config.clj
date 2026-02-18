@@ -1,5 +1,6 @@
 (ns limabean.harvest.adapter.config
   (:require [clojure.edn :as edn]
+            [clojure.pprint :as pp]
             [clojure.spec.alpha :as s]
             [clojure.string :as str]
             [expound.alpha :as expound]
@@ -90,4 +91,5 @@
                    merged-config)
                  DEFAULT-CONFIG)
         _ (tel/log! {:id ::config, :data config})]
+    (when (:verbose opts) (pp/pprint config *err*))
     (resolve-fns config)))

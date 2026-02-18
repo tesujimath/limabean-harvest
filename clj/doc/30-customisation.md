@@ -13,9 +13,9 @@ Hulling is responsible for reading the import file into an intermediate format, 
 So far two hulling programs are provided:
 
 - `hull-csv` for generic CSV
-- `hull-ofx` for OFX (with currently only OFX1 being supported).
+- `hull-ofx` for both OFX v1 and v2, and also QFX (which seems to be a trivial superset of OFX v2)
 
-Hulling produces both a header and a list of transactions.
+Hulling produces a list of hulls, each of which comprises a header and a list of transactions.
 
 Selection of which hulling program to run and how is called classification, and is done on the basis of a path glob in the EDN config, for example:
 
@@ -153,6 +153,8 @@ used like this in the EDN config file:
 }
 ```
 
+The intention is that institution-specific realizer functions are collected in [API contrib](../src/limabean/harvest/api/contrib).  PRs for additions here are always welcome, but please add a test for each, as is done in the [existing test cases](../../test-cases).
+
 ## Configuration
 
 The configuration is defined in EDN, passed on the command line with `--config` or via the environment variable `LIMABEAN_HARVEST_CONFIG` (with the command line flag taking priority), and is merged with the [default configuration](../src/limabean/harvest/core/config.clj) in the following way:
@@ -162,3 +164,5 @@ The configuration is defined in EDN, passed on the command line with `--config` 
 - output is deep merged, so individual values may be overridden while keeping the others
 
 See, for example, the [configuration used for the tests](../../test-cases/harvest.edn).
+
+`limabean-harvest -v` pretty prints on standard error the result of merging the default and user configurations.
