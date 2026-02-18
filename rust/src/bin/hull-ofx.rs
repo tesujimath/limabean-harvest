@@ -6,7 +6,7 @@ use std::{fs::read_to_string, path::Path, sync::LazyLock};
 
 static BLANK_LINE_RE: LazyLock<Regex> = LazyLock::new(|| Regex::new("\r\n\\s*\r\n").unwrap());
 
-static OFX2_HEADER_RE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r#"^<\?xml[^>]*\?>\s*<\?OFX\s+OFXHEADER="200""#).unwrap());
+static OFX2_HEADER_RE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r#"<\?xml[^>]*\?>\s*<\?OFX\s+OFXHEADER="200""#).unwrap());
 
 
 #[derive(Parser)]

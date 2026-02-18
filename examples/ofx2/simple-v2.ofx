@@ -1,3 +1,4 @@
+<!-- from OFX Banking Specification 2.3 section 11.14.1 -->
 <?xml version="1.0" encoding="ASCII"?>
 <?OFX OFXHEADER="200" VERSION="202" SECURITY="NONE" OLDFILEUID="NONE" NEWFILEUID="NONE"?>
 <OFX>
@@ -7,12 +8,19 @@
         <CODE>0</CODE>
         <SEVERITY>INFO</SEVERITY>
       </STATUS>
-      <DTSERVER>20250512143000</DTSERVER>
+      <DTSERVER>20051029101003</DTSERVER>
+      <LANGUAGE>ENG</LANGUAGE>
+      <DTPROFUP>19991029101003</DTPROFUP>
+      <DTACCTUP>20031029101003</DTACCTUP>
+      <FI>
+        <ORG>NCH</ORG>
+        <FID>1001</FID>
+      </FI>
     </SONRS>
   </SIGNONMSGSRSV1>
   <BANKMSGSRSV1>
     <STMTTRNRS>
-      <TRNUID>12345</TRNUID>
+      <TRNUID>1001</TRNUID>
       <STATUS>
         <CODE>0</CODE>
         <SEVERITY>INFO</SEVERITY>
@@ -20,21 +28,40 @@
       <STMTRS>
         <CURDEF>USD</CURDEF>
         <BANKACCTFROM>
-          <BANKID>12345</BANKID>
-          <ACCTID>67890</ACCTID>
+          <BANKID>121099999</BANKID>
+          <!-- Routing transit or other
+FI ID -->
+          <ACCTID>999988</ACCTID>
           <ACCTTYPE>CHECKING</ACCTTYPE>
         </BANKACCTFROM>
-        <BANKACCTTO>
-          <BANKID>98765</BANKID>
-          <ACCTID>45678</ACCTID>
-          <ACCTTYPE>CHECKING</ACCTTYPE>
-        </BANKACCTTO>
-        <PAYEE>John Doe</PAYEE>
-        <TXNID>98765</TXNID>
-        <AMOUNT>100.00</AMOUNT>
-        <PAYMENT>
-          <CHECKNUM>001</CHECKNUM>
-        </PAYMENT>
+        <BANKTRANLIST>
+          <!-- Begin list of statement
+trans. -->
+          <DTSTART>20051001</DTSTART>
+          <DTEND>20051028</DTEND>
+          <STMTTRN>
+            <TRNTYPE>CHECK</TRNTYPE>
+            <DTPOSTED>20051004</DTPOSTED>
+            <TRNAMT>-200.00</TRNAMT>
+            <FITID>00002</FITID>
+            <CHECKNUM>1000</CHECKNUM>
+          </STMTTRN>
+          <STMTTRN>
+            <TRNTYPE>ATM</TRNTYPE>
+            <DTPOSTED>20051020</DTPOSTED>
+            <DTUSER>20051020</DTUSER>
+            <TRNAMT>-300.00</TRNAMT>
+            <FITID>00003</FITID>
+          </STMTTRN>
+        </BANKTRANLIST>
+        <LEDGERBAL>
+          <BALAMT>200.29</BALAMT>
+          <DTASOF>200510291120</DTASOF>
+        </LEDGERBAL>
+        <AVAILBAL>
+          <BALAMT>200.29</BALAMT>
+          <DTASOF>200510291120</DTASOF>
+        </AVAILBAL>
       </STMTRS>
     </STMTTRNRS>
   </BANKMSGSRSV1>

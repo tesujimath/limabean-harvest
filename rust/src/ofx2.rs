@@ -68,7 +68,7 @@ struct CcAcctFrom {
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "UPPERCASE")]
 struct BankTranList {
-    #[serde(rename = "stmttrn")]
+    #[serde(rename = "STMTTRN")]
     stmttrns: Vec<StmtTrn>,
 }
 
