@@ -4,11 +4,11 @@ This is a new importer and framework for [Beancount](https://github.com/beancoun
 
 There are existing and mature import frameworks for Beancount, so why build another one?  The differentiating features of limabean-harvest are:
 
-- configuration as data structure not code (but see below for an argument that says this is a misfeature!)
+- configuration as data not code (but see below for an argument that says this is a misfeature!)
 - inference of secondary accounts from payee and narration fields, which in particular enables:
 - pairing of transactions between accounts where both accounts are imported in the same group
 
-Transaction pairing is perhaps its most compelling feature, to avoid duplication of transactions when importing from accounts at both ends of a transaction.
+[Transaction pairing](clj/doc/10-features.md#transaction-pairing) is perhaps its most compelling feature, to avoid duplication of transactions when importing from accounts at both ends of a transaction.
 
 See the following pages for further details.
 
