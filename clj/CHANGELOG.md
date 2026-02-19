@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file. This change
 
 ## [Unreleased]
 
+- replace hull-ofx output dialect with ofxheader and version
+- collapse identical realizers for generic-ofx{1,2} down to a single common one
+- rename kiwibank-ofx1 as kiwibank-ofx, since version doesn't matter
+
 [commit log]: https://github.com/tesujimath/limabean-harvest/compare/0.2.1...HEAD
 
 ## [0.2.1] - 2026-02-19
