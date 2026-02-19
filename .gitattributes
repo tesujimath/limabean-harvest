@@ -1,2 +1,2 @@
 # force LF for expected output files in golden tests
-*.expected.beancount text eol=lf
+/test-cases/** eol=lf
