@@ -36,7 +36,7 @@ The import path is lower-cased before globbing against the selectors.
 
 `:ingester` is a command invocation, where `:path` is substituted by the import path of the file in question.
 
-`:hdr` is optional, and supplements any header fields output by the hulling program in question.  These header fields are used for selection of which realizer to apply.
+`:hdr` is optional, and supplements any header fields output by the hulling program in question.  These header fields are used for selection of which realizer to apply.  In general, annotating the header with `:dialect` is the recommended way to ensure the required realizer is chosen.  Note that in the particular case of OFX, the OFX version may be determined from the header produced by `hull-ofx`.
 
 Classifiers are matched in order, so if there are multiple matches, the first one wins.
 
@@ -90,14 +90,14 @@ The realizer is selected on the basis of matching header fields from phase 1, in
 
 ```
 {
-  :base :generic-ofx1,
-  :id :kiwibank-ofx1,
+  :base :generic-ofx,
+  :id :kiwibank-ofx,
   :selector {:dialect "kiwibank.ofx", :ofxheader "100"},
-  :txn-fns [limabean.harvest.api.contrib.kiwibank-ofx1/clean-payee-narration]
+  :txn-fns [limabean.harvest.api.contrib.kiwibank-ofx/clean-payee-narration]
 }
 ```
 
-In this example, the `:kiwibank-ofx1` realizer is based on the already-defined `:generic-ofx1` realizer, with a single additional function to customize the mapping of the transaction fields after base realization.
+In this example, the `:kiwibank-ofx` realizer is based on the already-defined `:generic-ofx` realizer, with a single additional function to customize the mapping of the transaction fields after base realization.
 
 A realizer may be defined relative to one _earlier in the list of realizers_, by referencing its `id` in the field `:base`.  This is useful for customizing OFX import in minor ways without repeating most of the mapping.
 
@@ -160,6 +160,6 @@ The configuration is defined in EDN, passed on the command line with `--config` 
 - realizers from default config are prepended to those in user config, so may be used as a base
 - output is deep merged, so individual values may be overridden while keeping the others
 
-See, for example, the [configuration used for the tests](../../test-cases/kiwibank-ofx1/config.edn).
+See, for example, the [configuration used for the tests](../../test-cases/kiwibank-ofx/config.edn).
 
 `limabean-harvest -v` pretty prints on standard error the result of merging the default and user configurations.

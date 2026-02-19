@@ -7,8 +7,8 @@ It is usable with just the default configuration, and in this case is able to im
 When run, the imported directives are printed on standard output, so redirect that to a file, or append to your beanfile directly.
 
 ```
-kiri> limabean-harvest --config ./test-cases/kiwibank-ofx1/config.edn --context ./test-cases/kiwibank-ofx1/context.beancount \
-        ./test-cases/kiwibank-ofx1/*.ofx
+kiri> limabean-harvest --config ./test-cases/kiwibank-ofx/config.edn --context ./test-cases/kiwibank-ofx/context.beancount \
+        ./test-cases/kiwibank-ofx/*.ofx
 
 2025-03-31 txn "INTEREST EARNED" ""
   txnid: "99-1234-0123456-07.31Mar2025.1"
@@ -26,7 +26,7 @@ kiri> limabean-harvest --config ./test-cases/kiwibank-ofx1/config.edn --context 
 When running with the default configuration or that specified in the environment variable `LIMABEAN_HARVEST_CONFIG`, and with the context file defined in the environment variable `LIMABEAN_BEANFILE`, the normal invocation would be as follows:
 
 ```
-kiri> limabean-harvest ./test-cases/kiwibank-ofx1/*.ofx
+kiri> limabean-harvest ./test-cases/kiwibank-ofx/*.ofx
 ```
 
 Files are classified for import by path globs defined in the configuration, for which see [customisation](30-customisation.md).
@@ -39,7 +39,7 @@ The Beancount context file is used for various purposes.
 
 Account IDs may occur explicitly in the import file, for example as is the case with OFX.  Otherwise they may be inferred from the import file path, for example as is necessary for CSV, and are made available to the field mapping in the header field `inferred-accid`.
 
-These account IDs must match those in the Beancount context file, which are defined there by means of `accid` metadata strings on `open` directives, as in [this example](../../test-cases/kiwibank-ofx1/context.beancount).  Inference from import file path requires a unique match of account ID against the pathname of the import file.
+These account IDs must match those in the Beancount context file, which are defined there by means of `accid` metadata strings on `open` directives, as in [this example](../../test-cases/kiwibank-ofx/context.beancount).  Inference from import file path requires a unique match of account ID against the pathname of the import file.
 
 ### Transaction IDs
 

@@ -11,7 +11,7 @@
          {:metadata {:doc/format :markdown},
           :namespaces [limabean.harvest.api
                        limabean.harvest.api.contrib.first-direct-csv
-                       limabean.harvest.api.contrib.kiwibank-ofx1],
+                       limabean.harvest.api.contrib.kiwibank-ofx],
           :source-paths ["src"],
           :source-uri
             "https://github.com/tesujimath/limabean-harvest/blob/main/clj/src/{classpath}#L{line}"},

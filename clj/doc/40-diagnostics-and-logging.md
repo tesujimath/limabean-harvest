@@ -30,7 +30,7 @@ If the environment variable `LIMABEAN_HARVEST_LOG` is defined, that will accumul
 Hulling programs may also be run directly.  For example:
 
 ```
-kiri> hull-ofx ./test-cases/kiwibank-ofx1/kiwibank.ofx | jq
+kiri> hull-ofx ./test-cases/kiwibank-ofx/kiwibank.ofx | jq
 [
   {
     "hdr": {
