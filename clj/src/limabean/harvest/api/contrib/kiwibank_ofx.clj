@@ -1,4 +1,4 @@
-(ns limabean.harvest.api.contrib.kiwibank-ofx1
+(ns limabean.harvest.api.contrib.kiwibank-ofx
   (:require [clojure.string :as str]))
 
 ;; Alas Kiwibank OFX1 replicates the payee into the narration, in different

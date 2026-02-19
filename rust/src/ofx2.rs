@@ -3,8 +3,8 @@ use serde::Deserialize;
 use std::{collections::HashMap, path::Path};
 
 use super::{
-    ACCTID, BALAMT, CURDEF, DIALECT, DTASOF, DTPOSTED, FITID, MEMO, NAME, PAYEE, TRNAMT, TRNTYPE,
-    truncate_yyyymmdd,
+    ACCTID, BALAMT, CURDEF, DTASOF, DTPOSTED, FITID, MEMO, NAME, OFXHEADER, PAYEE, TRNAMT, TRNTYPE,
+    VERSION, truncate_yyyymmdd,
 };
 use crate::hull::{Hull, Hulls};
 
@@ -118,7 +118,12 @@ impl From<&StmtTrn> for HashMap<String, String> {
     }
 }
 
-pub(crate) fn parse(path: &Path, ofx2_content: &str) -> Result<Hulls> {
+pub(crate) fn parse(
+    path: &Path,
+    ofx2_content: &str,
+    ofxheader: &str,
+    version: &str,
+) -> Result<Hulls> {
     let doc = quick_xml::de::from_str::<'_, Document>(ofx2_content)
         .wrap_err_with(|| format!("Failed to decode OFX2 XML in {}", path.to_string_lossy()))?;
 
@@ -151,7 +156,8 @@ pub(crate) fn parse(path: &Path, ofx2_content: &str) -> Result<Hulls> {
         }))
         .map(|(curdef, acctid, banktranlist, ledgerbal)| Hull {
             hdr: [
-                (DIALECT, "ofx2".to_string()),
+                (OFXHEADER, ofxheader.to_string()),
+                (VERSION, version.to_string()),
                 (CURDEF, curdef.clone()),
                 (ACCTID, acctid.clone()),
                 (BALAMT, ledgerbal.balamt.clone()),

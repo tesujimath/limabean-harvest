@@ -1,0 +1,10 @@
+{:classifiers [{:hdr {:dialect "kiwibank.ofx"},
+                :id :kiwibank-ofx,
+                :ingester ["hull-ofx" :path],
+                :selector {:path-glob "**kiwibank*/*.ofx"}}],
+ :realizers
+   [{:base :generic-ofx,
+     :id :kiwibank-ofx,
+     :selector {:dialect "kiwibank.ofx", :ofxheader "100"},
+     :txn-fns
+       [limabean.harvest.api.contrib.kiwibank-ofx/clean-payee-narration]}]}

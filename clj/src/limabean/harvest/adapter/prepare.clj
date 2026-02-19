@@ -103,8 +103,13 @@
   [ingested config]
   (if-let [realizers (:realizers config)]
     (let [hdr (:hdr ingested)
-          r0 (or (some #(let [sel (:selector %)]
-                          (and (= sel (select-keys hdr (keys sel))) %))
+          r0 (or (some #(let [sel (:selector %)
+                              is-match (= sel (select-keys hdr (keys sel)))
+                              _ (tel/log! {:id ::get-realizer-sel,
+                                           :data {:sel sel,
+                                                  :hdr hdr,
+                                                  :is-match is-match}})]
+                          (and is-match %))
                        realizers)
                  (throw (ex-info "Failed to find realizer"
                                  {:type
@@ -114,7 +119,9 @@
                                   :config-path (:path config)})))
           r1 (resolve-base-realizer r0 realizers (:path config))]
       (if (:txn r1)
-        r1
+        (do (tel/log! {:id ::get-realizer,
+                       :data {:hdr hdr, :realizer-id (:id r1)}})
+            r1)
         (throw (ex-info "Realizer missing :txn definition after base resolution"
                         {:type :limabean.harvest/error-no-txn-realizer,
                          :realizer (:id r1),
@@ -131,8 +138,7 @@
         inferred (infer-header-fields classified digest)
         _ (tel/log! {:id ::infer-hdr, :data inferred})
         hulls (ingest inferred)
-        realizers (mapv #(get-realizer % config) hulls)
-        _ (tel/log! {:id ::get-realizer, :data realizers})]
+        realizers (mapv #(get-realizer % config) hulls)]
     (mapv (fn [hull realizer]
             (merge hull
                    {:meta (merge (:meta hull) {:realizer (:id realizer)}),
