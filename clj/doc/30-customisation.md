@@ -120,7 +120,7 @@ A generic CSV realizer is not possible, and therefore realizers for CSV format a
         :date {:src :txn, :key :date, :type :date, :fmt "dd/MM/yyyy"},
         :description {:src :txn, :key :description},
         :units {:src :txn, :key :amount, :type :decimal}},
-  :txn-fns [limabean.harvest.api.contrib.first-direct/payee-narration]
+  :txn-fns [limabean.harvest.api.contrib.first-direct-csv/payee-narration]
 }
 ```
 
@@ -153,8 +153,6 @@ used like this in the EDN config file:
 }
 ```
 
-The intention is that institution-specific realizer functions are collected in [API contrib](../src/limabean/harvest/api/contrib).  PRs for additions here are always welcome, but please add a test for each, as is done in the [existing test cases](../../test-cases).
-
 ## Configuration
 
 The configuration is defined in EDN, passed on the command line with `--config` or via the environment variable `LIMABEAN_HARVEST_CONFIG` (with the command line flag taking priority), and is merged with the [default configuration](../src/limabean/harvest/core/config.clj) in the following way:
@@ -163,6 +161,6 @@ The configuration is defined in EDN, passed on the command line with `--config` 
 - realizers from default config are prepended to those in user config, so may be used as a base
 - output is deep merged, so individual values may be overridden while keeping the others
 
-See, for example, the [configuration used for the tests](../../test-cases/harvest.edn).
+See, for example, the [configuration used for the tests](../../test-cases/kiwibank-ofx1/config.edn).
 
 `limabean-harvest -v` pretty prints on standard error the result of merging the default and user configurations.

@@ -7,7 +7,6 @@
   (:import [java.nio.file Files]))
 
 (def TEST-CASES-DIR "../test-cases")
-(def TEST-CONFIG-PATH (.getPath (io/file TEST-CASES-DIR "harvest.edn")))
 
 (defn- sorted-dir-entries
   "Return a sorted list of files in `dir`, an `io/file`"
@@ -18,21 +17,24 @@
   "Look for expected output files in test-cases to generate test base paths"
   []
   (->> (sorted-dir-entries (io/file TEST-CASES-DIR))
-       (filter #(str/ends-with? % ".expected.beancount"))
-       (mapv (fn [expected]
-               (let [name (str/replace expected ".expected.beancount" "")
-                     import-paths
-                       (mapv #(.getPath (io/file TEST-CASES-DIR name %))
-                         ;; sorting matters here for deterministic import
-                         ;; of multiple files
-                         (sorted-dir-entries (io/file TEST-CASES-DIR name)))
-                     context-candidate (io/file TEST-CASES-DIR
-                                                (format "%s.beancount" name))]
-                 (cond-> {:name name,
-                          :expected (slurp (io/file TEST-CASES-DIR expected)),
-                          :import-paths import-paths}
-                   (.exists context-candidate)
-                     (assoc :context (.getPath context-candidate))))))))
+       (mapv
+         (fn [name]
+           (let [test-dir (io/file TEST-CASES-DIR name)
+                 import-paths
+                   ;; sorting matters here for deterministic import of
+                   ;; multiple files
+                   (->> (sorted-dir-entries test-dir)
+                        (mapv #(.getPath (io/file test-dir %)))
+                        (filter #(not (or (str/ends-with? % ".beancount")
+                                          (str/ends-with? % ".edn")))))
+                 context-path (.getPath (io/file test-dir "context.beancount"))
+                 config-candidate (io/file test-dir "config.edn")]
+             (cond-> {:name name,
+                      :context context-path,
+                      :expected (slurp (io/file test-dir "expected.beancount")),
+                      :import-paths import-paths}
+               (.exists config-candidate) (assoc :config
+                                            (.getPath config-candidate))))))))
 
 (defn temp-file-path
   [prefix ext]
@@ -77,7 +79,6 @@
   (doseq [test (get-tests)]
     (testing (:name test)
       (let [actual (with-out-str (sut/run (:import-paths test)
-                                          (merge {:config TEST-CONFIG-PATH}
-                                                 (select-keys test
-                                                              [:context]))))]
+                                          (select-keys test
+                                                       [:config :context])))]
         (is (golden (:name test) actual (:expected test)))))))

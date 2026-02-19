@@ -9,7 +9,7 @@ most recent balance assertion are printed along with the error message.
 
 For example:
 ```
-aya> limabean --ledger examples/beancount/balance.beancount
+aya> limabean --beanfile examples/beancount/balance.beancount
 Error: invalid balance
     ╭─[ examples/beancount/balance.beancount:27:1 ]
  27 │ 2020-02-28 balance Assets:Bank:Current   940.00 NZD
@@ -30,7 +30,7 @@ If the environment variable `LIMABEAN_HARVEST_LOG` is defined, that will accumul
 Hulling programs may also be run directly.  For example:
 
 ```
-kiri> hull-ofx ./test-cases/kiwibank/kiwibank.ofx | jq
+kiri> hull-ofx ./test-cases/kiwibank-ofx1/kiwibank.ofx | jq
 [
   {
     "hdr": {
@@ -61,7 +61,7 @@ kiri> hull-ofx ./test-cases/kiwibank/kiwibank.ofx | jq
   }
 ]
 
-kiri> hull-csv ./test-cases/first-direct/10-9999-0000001-02.csv | jq
+kiri> hull-csv ./test-cases/first-direct-csv/10-9999-0000001-02.csv | jq
 [
   {
     "hdr": {},

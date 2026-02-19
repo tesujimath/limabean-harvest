@@ -1,4 +1,4 @@
-(ns limabean.harvest.api.contrib.first-direct
+(ns limabean.harvest.api.contrib.first-direct-csv
   (:require [clojure.string :as str]))
 
 ;; functions in the api namespace are referenced from config files, so

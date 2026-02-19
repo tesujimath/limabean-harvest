@@ -1,18 +1,9 @@
-{:classifiers [{:hdr {:dialect "kiwibank.ofx1"},
-                :id :kiwibank-ofx1,
-                :ingester ["hull-ofx" :path],
-                :selector {:path-glob "**kiwibank/*.ofx"}}
-               {:hdr {:cur "GBP", :dialect "first-direct.csv"},
+{:classifiers [{:hdr {:cur "GBP", :dialect "first-direct.csv"},
                 :id :first-direct-csv,
                 :ingester ["hull-csv" :path],
-                :selector {:path-glob "**/first-direct/**.csv"}}],
+                :selector {:path-glob "**first-direct*/*.csv"}}],
  :realizers
-   [{:base :generic-ofx1,
-     :id :kiwibank-ofx1,
-     :selector {:dialect "kiwibank.ofx1"},
-     :txn-fns
-       [limabean.harvest.api.contrib.kiwibank-ofx1/clean-payee-narration]}
-    {:bal {:accid {:key :inferred-accid, :src :hdr},
+   [{:bal {:accid {:key :inferred-accid, :src :hdr},
            :cur {:key :cur, :src :hdr},
            :date {:fmt "dd/MM/yyyy", :key :date, :src :txn, :type :date},
            :units {:key :balance, :src :txn, :type :decimal}},
@@ -24,4 +15,4 @@
            :date {:fmt "dd/MM/yyyy", :key :date, :src :txn, :type :date},
            :description {:key :description, :src :txn},
            :units {:key :amount, :src :txn, :type :decimal}},
-     :txn-fns [limabean.harvest.api.contrib.first-direct/payee-narration]}]}
+     :txn-fns [limabean.harvest.api.contrib.first-direct-csv/payee-narration]}]}

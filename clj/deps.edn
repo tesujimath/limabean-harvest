@@ -10,7 +10,7 @@
       {:exec-args
          {:metadata {:doc/format :markdown},
           :namespaces [limabean.harvest.api
-                       limabean.harvest.api.contrib.first-direct
+                       limabean.harvest.api.contrib.first-direct-csv
                        limabean.harvest.api.contrib.kiwibank-ofx1],
           :source-paths ["src"],
           :source-uri

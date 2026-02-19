@@ -17,6 +17,7 @@ See the following pages for further details.
 - [Usage](clj/doc/25-usage.md)
 - [Customisation](clj/doc/30-customisation.md)
 - [Diagnostics and Logging](clj/doc/40-diagnostics-and-logging.md)
+- [Contributing](clj/doc/50-contributing.md)
 
 ## Alternatives
 
