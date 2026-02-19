@@ -18,7 +18,7 @@ const TRNAMT: &str = "trnamt";
 const TRNTYPE: &str = "trntype";
 const VERSION: &str = "version";
 
-static BLANK_LINE_RE: LazyLock<Regex> = LazyLock::new(|| Regex::new("\r\n\\s*\r\n").unwrap());
+static BLANK_LINE_RE: LazyLock<Regex> = LazyLock::new(|| Regex::new("\r?\n\\s*\r?\n").unwrap());
 
 static OFX1_HEADER_RE: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r#"\bOFXHEADER:(1[0-9][0-9])\b[^<]*\bVERSION:([0-9]+)"#).unwrap());
