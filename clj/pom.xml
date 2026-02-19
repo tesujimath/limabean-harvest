@@ -85,6 +85,6 @@
     <url>https://github.com/tesujimath/limabean-harvest</url>
     <connection>scm:git:git://github.com/tesujimath/limabean-harvest.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/tesujimath/limabean-harvest.git</developerConnection>
-    <tag>0.1.2-SNAPSHOT</tag>
+    <tag>0.2.1</tag>
   </scm>
 </project>
