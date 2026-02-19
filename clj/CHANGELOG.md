@@ -3,11 +3,15 @@ All notable changes to this project will be documented in this file. This change
 
 ## [Unreleased]
 
+[commit log]: https://github.com/tesujimath/limabean-harvest/compare/0.2.1...HEAD
+
+## [0.2.1] - 2026-02-19
+
 ### Changed
 
 - limabean.harvest.api.contrib.first-direct renamed as limabean.harvest.api.contrib.first-direct-csv
 
-[commit log]: https://github.com/tesujimath/limabean-harvest/compare/0.2.0...HEAD
+[commit log]: https://github.com/tesujimath/limabean-harvest/compare/0.2.0...0.2.1
 
 ## [0.2.0] - 2026-02-19
 
