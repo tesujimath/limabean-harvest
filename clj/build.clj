@@ -70,6 +70,7 @@
                  :version version
                  :basis basis
                  :src-dirs ["src"]
+                 :src-pom :none
                  :pom-data (pom-template version)))
   (let [generated-pom-file (format "target/classes/META-INF/maven/%s/pom.xml"
                                    lib)
