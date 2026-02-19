@@ -3,8 +3,8 @@ use serde::Deserialize;
 use std::{collections::HashMap, path::Path};
 
 use super::{
-    ACCTID, BALAMT, CURDEF, DIALECT, DTASOF, DTPOSTED, FITID, MEMO, NAME, TRNAMT, TRNTYPE,
-    truncate_yyyymmdd,
+    ACCTID, BALAMT, CURDEF, DTASOF, DTPOSTED, FITID, MEMO, NAME, OFXHEADER, TRNAMT, TRNTYPE,
+    VERSION, truncate_yyyymmdd,
 };
 use crate::hull::{Hull, Hulls};
 
@@ -98,7 +98,12 @@ impl From<StmtTrn> for HashMap<String, String> {
     }
 }
 
-pub(crate) fn parse(path: &Path, ofx_content: &str) -> Result<Hulls> {
+pub(crate) fn parse(
+    path: &Path,
+    ofx_content: &str,
+    ofxheader: &str,
+    version: &str,
+) -> Result<Hulls> {
     let sgml = sgmlish::Parser::builder()
         .lowercase_names()
         .expand_entities(|entity| match entity {
@@ -158,7 +163,8 @@ pub(crate) fn parse(path: &Path, ofx_content: &str) -> Result<Hulls> {
     }
     .map(|(curdef, acctid, balamt, dtasof, stmttrns)| Hull {
         hdr: [
-            (DIALECT, "ofx1".to_string()),
+            (OFXHEADER, ofxheader.to_string()),
+            (VERSION, version.to_string()),
             (CURDEF, curdef),
             (ACCTID, acctid),
             (BALAMT, balamt),

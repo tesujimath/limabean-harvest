@@ -21,11 +21,10 @@ Selection of which hulling program to run and how is called classification, and 
 
 ```
 {
-  :id :kiwibank-ofx1,
+  :id :kiwibank-ofx,
   :selector {:path-glob "**kiwibank/*.ofx"
   :ingester ["hull-ofx" :path],
-  :hdr {:dialect "kiwibank.ofx1"},
-
+  :hdr {:dialect "kiwibank.ofx"},
 }
 ```
 
@@ -87,13 +86,13 @@ After this extraction/mapping process, an arbitrary list of functions may be app
 
 ### Realizer selection and inheritance
 
-The realizer is selected on the basis of matching header fields from phase 1, in order as with classifiers.  Usually the `:dialect` passed explicitly into Phase 1 is enough.  For example,
+The realizer is selected on the basis of matching header fields from phase 1, in order as with classifiers.  Usually any `:dialect` passed explicitly into Phase 1 in combination with `:ofxheader` is enough.  For example,
 
 ```
 {
   :base :generic-ofx1,
   :id :kiwibank-ofx1,
-  :selector {:dialect "kiwibank.ofx1"},
+  :selector {:dialect "kiwibank.ofx", :ofxheader "100"},
   :txn-fns [limabean.harvest.api.contrib.kiwibank-ofx1/clean-payee-narration]
 }
 ```

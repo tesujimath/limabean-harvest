@@ -34,28 +34,29 @@ kiri> hull-ofx ./test-cases/kiwibank-ofx1/kiwibank.ofx | jq
 [
   {
     "hdr": {
+      "ofxheader": "100",
+      "version": "102",
       "acctid": "99-1234-0123456-07",
+      "curdef": "NZD",
+      "balamt": "150.42"
       "dtasof": "20250412",
-      "dialect": "ofx1",
-      "balamt": "150.42",
-      "curdef": "NZD"
     },
     "txns": [
       {
-        "memo": "INTEREST EARNED ;",
-        "dtposted": "20250331",
-        "trntype": "CREDIT",
         "fitid": "31Mar2025.1",
+        "trntype": "CREDIT",
+        "dtposted": "20250331",
+        "trnamt": "4.72",
         "name": "INTEREST EARNED",
-        "trnamt": "4.72"
+        "memo": "INTEREST EARNED ;"
       },
       {
+        "dtposted": "20250331",
         "trnamt": "-10.00",
         "trntype": "DEBIT",
-        "memo": "WIKIMEDIA 877-600-9454 ;",
         "name": "WIKIMEDIA 877-600-9454",
-        "dtposted": "20250331",
-        "fitid": "31Mar2025.2"
+        "fitid": "31Mar2025.2",
+        "memo": "WIKIMEDIA 877-600-9454 ;"
       }
     ]
   }
