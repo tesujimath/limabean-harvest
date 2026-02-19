@@ -1,2 +1,2 @@
 # force LF for expected output files in golden tests
-/test-cases/** eol=lf
+/test-cases/**expected* eol=lf
