@@ -6,6 +6,12 @@
 
 `limabean-harvest` is available as a Nix flake at `url = "github:tesujimath/limabean-harvest"`, and this flake pulls in the Clojure CLI tools automatically.  It currently runs from Clojars, but is likely in future to run standalone.
 
+### Arch Linux
+
+`limabean-harvest` is available in the [Arch Linux user repository](https://aur.archlinux.org/packages/limabean-harvest), so may be installed using `paru -S limabean-harvest`.
+
+This runs in standalone mode.
+
 ### Other packaging
 
 If you have packaged or are interested in packaging `limabean-harvest` for your distro of choice, please reach out for help or at least a mention here.  Thanks!
