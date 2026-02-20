@@ -4,7 +4,7 @@
   <packaging>jar</packaging>
   <groupId>io.github.tesujimath</groupId>
   <artifactId>limabean-harvest</artifactId>
-  <version>0.2.1</version>
+  <version>0.2.2</version>
   <name>limabean-harvest</name>
   <dependencies>
     <dependency>
@@ -85,6 +85,6 @@
     <url>https://github.com/tesujimath/limabean-harvest</url>
     <connection>scm:git:git://github.com/tesujimath/limabean-harvest.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/tesujimath/limabean-harvest.git</developerConnection>
-    <tag>0.2.1</tag>
+    <tag>0.2.2</tag>
   </scm>
 </project>
