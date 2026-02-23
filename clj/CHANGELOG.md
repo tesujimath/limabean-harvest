@@ -3,11 +3,15 @@ All notable changes to this project will be documented in this file. This change
 
 ## [Unreleased]
 
+[commit log]: https://github.com/tesujimath/limabean-harvest/compare/0.2.3...HEAD
+
+## [0.2.3] - 2026-02-23
+
 ### Added
 
 -- support for globs in include pragmas #35
 
-[commit log]: https://github.com/tesujimath/limabean-harvest/compare/0.2.2...HEAD
+[commit log]: https://github.com/tesujimath/limabean-harvest/compare/0.2.2...0.2.3
 
 ## [0.2.2] - 2026-02-20
 
