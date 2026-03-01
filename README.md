@@ -2,7 +2,7 @@
 
 This is a new importer and framework for [Beancount](https://github.com/beancount/beancount) using [Rust](https://rust-lang.org) and [Clojure](https://clojure.org/) and the [Lima parser](https://github.com/tesujimath/beancount-parser-lima).
 
-There are existing and mature import frameworks for Beancount, so why build another one?  The differentiating features of limabean-harvest are:
+There are existing and mature import frameworks for Beancount, so why build another one?  The differentiating features of `limabean-harvest` are:
 
 - configuration as data not code (but see below for an argument that says this is a misfeature!)
 - inference of secondary accounts from payee and narration fields, which in particular enables:
@@ -18,6 +18,8 @@ See the following pages for further details.
 - [Customisation](clj/doc/30-customisation.md)
 - [Diagnostics and Logging](clj/doc/40-diagnostics-and-logging.md)
 - [Contributing](clj/doc/50-contributing.md)
+
+If you like `limabean-harvest`, check out [limabean](https://github.com/tesujimath/limabean) itself, a new implementation of Beancount using Rust and Clojure.
 
 ## Alternatives
 
