@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file. This change
 
 ## [Unreleased]
 
+### Fixed
+
+- a realizer without a bal no longer crashes, and simply omits the balance
+
 [commit log]: https://github.com/tesujimath/limabean-harvest/compare/0.2.3...HEAD
 
 ## [0.2.3] - 2026-02-23

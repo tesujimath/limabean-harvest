@@ -4,3 +4,5 @@ target/
 limabean-harvest.log*
 **/tests/**/*.actual.beancount
 /result
+/.lsp/
+/.clj-kondo/.cache/

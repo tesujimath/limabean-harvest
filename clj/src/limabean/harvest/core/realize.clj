@@ -51,27 +51,37 @@
 
 (defn- max-by-date [x1 x2] (if (jt/after? (:date x1) (:date x2)) x1 x2))
 
+(def ^:private no-bal-xf
+  "Transducer which emits nothing, for a realizer without a balance"
+  (filter (constantly false)))
+
 (defn bal-xf
-  "Transducer to realize just the most recent balance, if any"
+  "Transducer to realize just the most recent balance, if any.
+   A realizer without a bal emits no balance at all."
   [realizer hdr ctx]
-  (fn [rf]
-    (let [state (volatile! nil)] ;; latest-bal, if any
-      (fn
-        ;; init
-        ([] (rf))
-        ;; completion
-        ([result]
-         (let [latest-bal @state
-               ;; emit latest-bal, if any
-               result' (if latest-bal (rf result latest-bal) result)]
-           (rf result')))
-        ;; step
-        ([result txn]
-         (let [prev-bal @state
-               txn-bal
-                 (realize-bal (:bal realizer) (:bal-fns realizer) hdr txn ctx)
-               latest-bal (if (and prev-bal txn-bal)
-                            (max-by-date txn-bal prev-bal)
-                            txn-bal)]
-           (vreset! state latest-bal))
-         result)))))
+  (if-not (:bal realizer)
+    no-bal-xf
+    (fn [rf]
+      (let [state (volatile! nil)] ;; latest-bal, if any
+        (fn
+          ;; init
+          ([] (rf))
+          ;; completion
+          ([result]
+           (let [latest-bal @state
+                 ;; emit latest-bal, if any
+                 result' (if latest-bal (rf result latest-bal) result)]
+             (rf result')))
+          ;; step
+          ([result txn]
+           (let [prev-bal @state
+                 txn-bal (realize-bal (:bal realizer)
+                                      (:bal-fns realizer)
+                                      hdr
+                                      txn
+                                      ctx)
+                 latest-bal (if (and prev-bal txn-bal)
+                              (max-by-date txn-bal prev-bal)
+                              txn-bal)]
+             (vreset! state latest-bal))
+           result))))))
