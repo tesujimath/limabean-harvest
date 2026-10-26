@@ -37,12 +37,13 @@
 (s/def ::selector (s/map-of keyword? string?))
 (s/def ::bal ::field-map)
 (s/def ::bal-fns (s/coll-of symbol? :kind vector?))
+(s/def ::bal-pick #{:first :last})
 (s/def ::txn ::field-map)
 (s/def ::txn-fns (s/coll-of symbol? :kind vector?))
 
 (s/def ::realizer
   (s/keys :req-un [::id ::selector]
-          :opt-un [::base ::bal ::bal-fns ::txn ::txn-fns]))
+          :opt-un [::base ::bal ::bal-fns ::bal-pick ::txn ::txn-fns]))
 
 (s/def ::realizers (s/coll-of ::realizer :kind vector?))
 

@@ -1,0 +1,18 @@
+{:classifiers [{:hdr {:cur "NZD", :dialect "bal-pick.csv"},
+                :id :bal-pick-csv,
+                :ingester ["hull-csv" :path],
+                :selector {:path-glob "**bal-pick-first/*.csv"}}],
+ :realizers
+   [{:bal {:accid {:key :inferred-accid, :src :hdr},
+           :cur {:key :cur, :src :hdr},
+           :date {:fmt "dd/MM/yyyy", :key :date, :src :txn, :type :date},
+           :units {:key :balance, :src :txn, :type :decimal}},
+     :bal-fns [limabean.harvest.api/inc-date],
+     ;; no :bal-pick, so the default of :first applies
+     :id :bal-pick-csv,
+     :selector {:dialect "bal-pick.csv"},
+     :txn {:accid {:key :inferred-accid, :src :hdr},
+           :cur {:key :cur, :src :hdr},
+           :date {:fmt "dd/MM/yyyy", :key :date, :src :txn, :type :date},
+           :payee {:key :description, :src :txn},
+           :units {:key :amount, :src :txn, :type :decimal}}}]}

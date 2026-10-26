@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file. This change
 
 ## [Unreleased]
 
+### Added
+
+- `:bal-pick` for a realizer, to say which of several balances sharing the latest date is the closing one, being `:first` (the default) or `:last` in statement order
+
 ### Fixed
 
 - a realizer without a bal no longer crashes, and simply omits the balance
