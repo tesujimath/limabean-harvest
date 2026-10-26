@@ -1,0 +1,14 @@
+2025-03-01 txn "FIRST" ""
+  Assets:Bank:Current                                                     10.00 NZD
+  Income:Unknown
+
+2025-03-02 txn "THIRD" ""
+  Assets:Bank:Current                                                     -5.00 NZD
+  Expenses:Unknown
+
+2025-03-02 txn "SECOND" ""
+  Assets:Bank:Current                                                     -5.00 NZD
+  Expenses:Unknown
+
+2025-03-03 balance Assets:Bank:Current                                   100.00 NZD
+

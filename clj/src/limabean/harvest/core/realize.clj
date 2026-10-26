@@ -49,7 +49,15 @@
       (correlation/with-id-from txn)
       (assoc :dct :bal)))
 
-(defn- max-by-date [x1 x2] (if (jt/after? (:date x1) (:date x2)) x1 x2))
+(defn- max-by-date
+  "Return the later of `x1`, the more recently seen balance, and `x2`.
+   Balances which share the latest date are resolved by `bal-pick`, being
+   whichever of :first or :last in statement order is the closing balance."
+  [bal-pick x1 x2]
+  (let [later? (case bal-pick
+                 :last jt/not-before?
+                 jt/after?)]
+    (if (later? (:date x1) (:date x2)) x1 x2)))
 
 (def ^:private no-bal-xf
   "Transducer which emits nothing, for a realizer without a balance"
@@ -81,7 +89,9 @@
                                       txn
                                       ctx)
                  latest-bal (if (and prev-bal txn-bal)
-                              (max-by-date txn-bal prev-bal)
+                              (max-by-date (:bal-pick realizer)
+                                           txn-bal
+                                           prev-bal)
                               txn-bal)]
              (vreset! state latest-bal))
            result))))))

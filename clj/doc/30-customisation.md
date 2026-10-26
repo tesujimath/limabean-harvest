@@ -123,11 +123,22 @@ A generic CSV realizer is not possible, and therefore realizers for CSV format a
 }
 ```
 
-Note that this example illustrates two further points which have not yet been described.
+Note that this example illustrates three further points which have not yet been described.
 
 1. The header field `:inferred-accid` is generated before realization and available for use if the import path contains any of the account IDs defined in `accid` metadata in `open` directives in the context file.  In general this is only required if there is no account ID available from hulling.
 
-2. A balance directive may be generated from either the header or individual transactions.  In case of the latter, only the last balance is retained.  (Here the `inc-date` function is used to push the balance onto the next day, since Beancount balance directives apply to the beginning of the day.)
+2. A balance directive may be generated from either the header or individual transactions.  In case of the latter, the balance retained is the one with the latest date.  (Here the `inc-date` function is used to push the balance onto the next day, since Beancount balance directives apply to the beginning of the day.)
+
+3. Where several transactions share that latest date, `:bal-pick` says which of them carries the closing balance, according to the order in which the institution writes its statements.  The default of `:first` suits a statement written newest first, as First direct do.  For a statement written oldest first, use `:bal-pick :last`, otherwise the balance is taken from partway through the final day:
+
+```
+{
+  :bal {...},
+  :bal-fns [limabean.harvest.api/inc-date],
+  :bal-pick :last,
+  ...
+}
+```
 
 ### User provided code
 
