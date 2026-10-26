@@ -95,15 +95,25 @@
   :txn-fns [limabean.harvest.api.contrib.first-direct-csv/payee-narration]
 }
 </code></pre>
-<p>Note that this example illustrates two further points which have not yet been described.</p>
+<p>Note that this example illustrates three further points which have not yet been described.</p>
 <ol>
 <li>
 <p>The header field <code>:inferred-accid</code> is generated before realization and available for use if the import path contains any of the account IDs defined in <code>accid</code> metadata in <code>open</code> directives in the context file.  In general this is only required if there is no account ID available from hulling.</p>
 </li>
 <li>
-<p>A balance directive may be generated from either the header or individual transactions.  In case of the latter, only the last balance is retained.  (Here the <code>inc-date</code> function is used to push the balance onto the next day, since Beancount balance directives apply to the beginning of the day.)</p>
+<p>A balance directive may be generated from either the header or individual transactions.  In case of the latter, the balance retained is the one with the latest date.  (Here the <code>inc-date</code> function is used to push the balance onto the next day, since Beancount balance directives apply to the beginning of the day.)</p>
+</li>
+<li>
+<p>Where several transactions share that latest date, <code>:bal-pick</code> says which of them carries the closing balance, according to the order in which the institution writes its statements.  The default of <code>:first</code> suits a statement written newest first, as First direct do.  For a statement written oldest first, use <code>:bal-pick :last</code>, otherwise the balance is taken from partway through the final day:</p>
 </li>
 </ol>
+<pre><code>{
+  :bal {...},
+  :bal-fns [limabean.harvest.api/inc-date],
+  :bal-pick :last,
+  ...
+}
+</code></pre>
 <h3><a href="#user-provided-code" id="user-provided-code"></a>User provided code</h3>
 <p>The user may provide their realizer functions via <code>$LIMABEAN_HARVEST_USER_CLJ</code>, for example:</p>
 <pre><code>(ns local
