@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file. This change
 ### Fixed
 
 - a realizer without a bal no longer crashes, and simply omits the balance
+- a bal with a field which is absent from the source no longer crashes, and is likewise omitted, as for an OFX statement without a LEDGERBAL
 
 [commit log]: https://github.com/tesujimath/limabean-harvest/compare/0.2.3...HEAD
 
