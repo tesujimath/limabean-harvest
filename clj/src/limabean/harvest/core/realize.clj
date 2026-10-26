@@ -12,10 +12,12 @@
                              :txn txn)
                        v-raw (get src (:key r))
                        fmt (or (:fmt r) "yyyy-MM-dd")]
-                   (case (:type r)
-                     :date (jt/local-date fmt v-raw)
-                     :decimal (BigDecimal. v-raw)
-                     nil v-raw))
+                   ;; a field which is absent from the source is not realized
+                   (when (some? v-raw)
+                     (case (:type r)
+                       :date (jt/local-date fmt v-raw)
+                       :decimal (BigDecimal. v-raw)
+                       nil v-raw)))
         (vector? r) (str/join "" (map #(realize-field hdr txn % ctx) r))))
 
 (defn- thread-fns
@@ -40,14 +42,19 @@
          (realize-txn (:txn realizer) (:txn-fns realizer) hdr txn ctx))))
 
 (defn- realize-bal
-  "Realize the balance, and if bal-fn is defined, apply that after the event."
+  "Realize the balance, and if bal-fn is defined, apply that after the event.
+   A balance any of whose fields is absent from the source is not realized at
+   all, as is the case for an OFX statement without a LEDGERBAL."
   [realizer bal-fns hdr txn ctx]
-  (-> (into {}
-            (map (fn [[k _v]] [k (realize-field hdr txn (get realizer k) ctx)])
-              realizer))
-      (thread-fns (or bal-fns []))
-      (correlation/with-id-from txn)
-      (assoc :dct :bal)))
+  (let [fields (into {}
+                     (map (fn [[k _v]]
+                            [k (realize-field hdr txn (get realizer k) ctx)])
+                       realizer))]
+    (when (every? some? (vals fields))
+      (-> fields
+          (thread-fns (or bal-fns []))
+          (correlation/with-id-from txn)
+          (assoc :dct :bal)))))
 
 (defn- max-by-date
   "Return the later of `x1`, the more recently seen balance, and `x2`.
@@ -88,10 +95,10 @@
                                       hdr
                                       txn
                                       ctx)
-                 latest-bal (if (and prev-bal txn-bal)
-                              (max-by-date (:bal-pick realizer)
-                                           txn-bal
-                                           prev-bal)
-                              txn-bal)]
+                 latest-bal (cond (nil? txn-bal) prev-bal
+                                  (nil? prev-bal) txn-bal
+                                  :else (max-by-date (:bal-pick realizer)
+                                                     txn-bal
+                                                     prev-bal))]
              (vreset! state latest-bal))
            result))))))
