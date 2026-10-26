@@ -1,0 +1,14 @@
+{:classifiers [{:hdr {:dialect "no-bal.ofx"},
+                :id :no-bal-ofx,
+                :ingester ["hull-ofx" :path],
+                :selector {:path-glob "**no-bal/*.ofx"}}],
+ :realizers
+   [{:id :no-bal-ofx,
+     :selector {:dialect "no-bal.ofx"},
+     :txn {:accid {:key :acctid, :src :hdr},
+           :cur {:key :curdef, :src :hdr},
+           :date {:fmt "yyyyMMdd", :key :dtposted, :src :txn, :type :date},
+           :narration {:key :memo, :src :txn},
+           :payee {:key :name, :src :txn},
+           :txnid [{:key :acctid, :src :hdr} "." {:key :fitid, :src :txn}],
+           :units {:key :trnamt, :src :txn, :type :decimal}}}]}
