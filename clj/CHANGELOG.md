@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file. This change
 
 ## [Unreleased]
 
+[commit log]: https://github.com/tesujimath/limabean-harvest/compare/0.2.4...HEAD
+
+## [0.2.4] - 2026-11-22
+
 ### Added
 
 - `:bal-pick` for a realizer, to say which of several balances sharing the latest date is the closing one, being `:first` (the default) or `:last` in statement order
@@ -12,7 +16,7 @@ All notable changes to this project will be documented in this file. This change
 - a realizer without a bal no longer crashes, and simply omits the balance
 - a bal with a field which is absent from the source no longer crashes, and is likewise omitted, as for an OFX statement without a LEDGERBAL
 
-[commit log]: https://github.com/tesujimath/limabean-harvest/compare/0.2.3...HEAD
+[commit log]: https://github.com/tesujimath/limabean-harvest/compare/0.2.3...0.2.4
 
 ## [0.2.3] - 2026-02-23
 
